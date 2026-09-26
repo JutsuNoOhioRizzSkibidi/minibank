@@ -1,6 +1,10 @@
 package bank;
 
 public class TransferService{
+    private final CommissionPolicy commissionPolicy;
+    public TransferService(CommissionPolicy commissionPolicy){
+        this.commissionPolicy = commissionPolicy;
+    }
     public boolean transfer(
             BankAccount from,
             BankAccount to,
@@ -13,7 +17,9 @@ public class TransferService{
         if (from == to){
             return false;
         }
-        if (!from.withdraw(amount)){
+        double commission = commissionPolicy.calculate(amount);
+        double totalAmount = amount + commission;
+        if (!from.withdraw(totalAmount)){
             return false;
         }
         to.deposit(amount);
