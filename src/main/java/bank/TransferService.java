@@ -2,8 +2,10 @@ package bank;
 
 public class TransferService{
     private final CommissionPolicy commissionPolicy;
-    public TransferService(CommissionPolicy commissionPolicy){
+    private final NotificationService notificationService;
+    public TransferService(CommissionPolicy commissionPolicy, NotificationService notificationService){
         this.commissionPolicy = commissionPolicy;
+        this.notificationService = notificationService;
     }
     public boolean transfer(
             BankAccount from,
@@ -23,6 +25,7 @@ public class TransferService{
             return false;
         }
         to.deposit(amount);
+        notificationService.notify("перевод в размере" + amount + " ед валюты выполнен");
         return true;
     }
 }
