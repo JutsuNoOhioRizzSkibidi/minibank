@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SavingsAccountTest {
     @Test
-    void cannotWithdrawBelowMinimumBalance() {
+    void cantWithdrawBelowMinimumBalance() {
         SavingsAccount account =
                 new SavingsAccount("111", "Андрей", 2000, 1000);
         boolean result = account.withdraw(1500);
