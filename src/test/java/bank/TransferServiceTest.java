@@ -6,6 +6,7 @@ import org.junit.jupiter.api.TestClassOrder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class TransferServiceTest {
     @Test
@@ -147,5 +148,34 @@ public class TransferServiceTest {
         assertEquals(1000, from.getBalance(), 0.01);
         assertEquals(6000, to.getBalance(), 0.01);
     }
-
+    @Test
+    void successfulTransferSendsOneNotification(){
+        BankAccount from =
+                new DebitAccount("12", "Polina", 5000);
+        BankAccount to =
+                new DebitAccount("13", "KOolya", 1000);
+        FakeNotification notificationService = new FakeNotification();
+        TransferService service = new TransferService(
+                new NoCommission(), notificationService
+        );
+        boolean result = service.transfer(from, to, 3000);
+        assertTrue(result);
+        assertEquals(1, notificationService.getNotificationCount());
+        assertEquals("перевод в размере3000.0 ед валюты выполнен", notificationService.getLastMessage());
+    }
+    @Test
+    void failTransferDontSendNotification(){
+        BankAccount from =
+                new DebitAccount("14", "Petya", 1000);
+        BankAccount to =
+                new DebitAccount("15", "Jojo", 2000);
+        FakeNotification notificationService = new FakeNotification();
+        TransferService service = new TransferService(
+                new NoCommission(), notificationService
+        );
+        boolean result = service.transfer(from,  to, 3000);
+        assertFalse(result);
+        assertEquals(0, notificationService.getNotificationCount());
+        assertNull(notificationService.getLastMessage());
+    }
 }
