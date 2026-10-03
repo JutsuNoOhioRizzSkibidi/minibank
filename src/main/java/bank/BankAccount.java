@@ -37,4 +37,12 @@ public abstract class BankAccount{
         balance = balance - amount;
         return true;
     }
+    @Override
+    public String toString(){
+        return getClass().getSimpleName() + "{"
+                + "number='" + number + '\''
+                + ", owner='" + owner + '\''
+                + ", balance=" + balance
+                + '}';
+    }
 }
