@@ -1,8 +1,11 @@
 package bank;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestClassOrder;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class BankAccountTest {
     @Test
@@ -50,4 +53,31 @@ public class BankAccountTest {
         assertEquals(originalHashCode, first.hashCode());
         assertEquals(first.hashCode(), second.hashCode());
     }
+    @Test
+    void accountEqualsItself(){
+        BankAccount account =
+                new DebitAccount("004", "Henry", 1000);
+        boolean result = account.equals(account);
+        assertTrue(result);
+    }
+    @Test
+    void accountDoesNotEqualNull(){
+        BankAccount account =
+                new DebitAccount("005", "Vitaliy", 1000);
+        boolean result = account.equals(null);
+        assertFalse(result);
+    }
+    @Test
+    void equalAccountsHaveSameHashCode(){
+        BankAccount first =
+                new DebitAccount("006", "Pavel", 1000);
+        BankAccount second =
+                new CreditAccount("006", "Pavel", 2000, 5000);
+        int firstHashCode = first.hashCode();
+        int secondHashCode = second.hashCode();
+        assertEquals(first, second);
+        assertEquals(firstHashCode, secondHashCode);
+
+    }
+
 }
