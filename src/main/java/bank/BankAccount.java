@@ -36,7 +36,7 @@ public abstract class BankAccount{
             throw new IllegalArgumentException("сумма должна быть положительной");
         }
         if (balance - amount < minimumBalance){
-            throw new IllegalArgumentException("недостаточно средств");
+            throw new InsufficientFundsException("недостаточно средств");
         }
         balance = balance - amount;
     }
