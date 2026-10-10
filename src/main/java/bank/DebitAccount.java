@@ -2,7 +2,7 @@ package bank;
 
 public class DebitAccount extends BankAccount {
     public DebitAccount(
-            String number,
+            AccountNumber number,
             String owner,
             double initialBalance ) {
         super(number, owner, initialBalance);

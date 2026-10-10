@@ -1,14 +1,17 @@
 package bank;
 
 public abstract class BankAccount{
-    private final String number;
+    private final AccountNumber number;
     private final String owner;
     private double balance;
 
     protected BankAccount(
-            String number,
+            AccountNumber number,
             String owner,
-            double initialBalance){
+            double initialBalance) {
+        if (number == null){
+            throw new IllegalArgumentException("счет не может быть null");
+        }
         if (initialBalance < 0) {
             throw new IllegalArgumentException("начальный баланс не может быть отрицательным");
         }
@@ -40,7 +43,7 @@ public abstract class BankAccount{
     @Override
     public String toString(){
         return getClass().getSimpleName() + "{"
-                + "number='" + number + '\''
+                + "number='" + number.value() + '\''
                 + ", owner='" + owner + '\''
                 + ", balance=" + balance
                 + '}';

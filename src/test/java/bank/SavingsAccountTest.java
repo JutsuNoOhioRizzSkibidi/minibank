@@ -9,7 +9,7 @@ public class SavingsAccountTest {
     @Test
     void cantWithdrawBelowMinimumBalance() {
         SavingsAccount account =
-                new SavingsAccount("111", "Андрей", 2000, 1000);
+                new SavingsAccount(new AccountNumber("0000000001"), "Андрей", 2000, 1000);
         boolean result = account.withdraw(1500);
         assertFalse(result);
         assertEquals(2000.0, account.getBalance(), 0.01);
@@ -17,7 +17,7 @@ public class SavingsAccountTest {
     @Test
     void canWithdrawToMinimumBalance() {
         SavingsAccount account =
-                new SavingsAccount("222", "Аюша", 2000, 1000);
+                new SavingsAccount(new AccountNumber("0000000002"), "Аюша", 2000, 1000);
         boolean result = account.withdraw(1000);
         assertTrue(result);
         assertEquals(1000.0, account.getBalance(), 0.01);

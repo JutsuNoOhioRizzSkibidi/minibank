@@ -3,7 +3,7 @@ package bank;
 public class CreditAccount extends BankAccount{
     private final double creditLimit;
     public CreditAccount(
-            String number,
+            AccountNumber number,
             String owner,
             double initialBalance,
             double creditLimit){

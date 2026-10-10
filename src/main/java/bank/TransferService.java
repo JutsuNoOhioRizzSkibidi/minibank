@@ -16,7 +16,7 @@ public class TransferService{
         if (amount < 0){
             return false;
         }
-        if (from == to){
+        if (from.equals(to)){
             return false;
         }
         double commission = commissionPolicy.calculate(amount);

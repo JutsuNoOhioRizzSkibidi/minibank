@@ -10,7 +10,7 @@ public class CreditAccountTest {
     @Test
     void canWithdrawToCreditLimit() {
         CreditAccount account =
-                new CreditAccount("111", "Иван", 1000, 5000);
+                new CreditAccount(new AccountNumber("0000000001"), "Иван", 1000, 5000);
         boolean result = account.withdraw(6000);
         assertTrue(result);
         assertEquals(-5000.0, account.getBalance(), 0.01);
@@ -18,7 +18,7 @@ public class CreditAccountTest {
     @Test
     void cantWithdrawBeyondCreditLimit() {
         CreditAccount account =
-                new CreditAccount("222", "Ольга", 1000, 5000);
+                new CreditAccount(new AccountNumber("0000000002"), "Ольга", 1000, 5000);
         boolean result = account.withdraw(6001);
         assertFalse(result);
         assertEquals(1000.0, account.getBalance(), 0.001);
