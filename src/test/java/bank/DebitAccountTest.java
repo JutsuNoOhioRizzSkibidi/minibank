@@ -3,6 +3,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class DebitAccountTest {
     @Test
@@ -39,15 +40,18 @@ public class DebitAccountTest {
     void noDepositNoIncreaseBalance(){
         DebitAccount account =
                 new DebitAccount(new AccountNumber("0000000005"), "Гена", 1000);
-        account.deposit(0);
+        assertThrows(IllegalArgumentException.class, () -> account.deposit(0));
         assertEquals(1000, account.getBalance(), 0.01);
     }
     @Test
-    void negativeDepositNoIncreaseBalance(){
-        DebitAccount account =
-                new DebitAccount(new AccountNumber("0000000006"), "Ваня", 1000);
-        account.deposit(-100);
-        assertEquals(1000, account.getBalance(), 0.01);
+    void negativeDepositThrowsException() {
+        BankAccount account = new DebitAccount(
+                new AccountNumber("0000000010"), "Анна", 1000
+        );
+        assertThrows(
+                IllegalArgumentException.class, () -> account.deposit(-100)
+        );
+        assertEquals(1000.0, account.getBalance(), 0.001);
     }
     @Test
     void cantWithdrawNoAmount(){
