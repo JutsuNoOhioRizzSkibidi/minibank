@@ -4,22 +4,22 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class SavingsAccountTest {
     @Test
     void cantWithdrawBelowMinimumBalance() {
         SavingsAccount account =
                 new SavingsAccount(new AccountNumber("0000000001"), "Андрей", 2000, 1000);
-        boolean result = account.withdraw(1500);
-        assertFalse(result);
+        assertThrows(InsufficientFundsException.class, () -> account.withdraw(1500)
+        );
         assertEquals(2000.0, account.getBalance(), 0.01);
     }
     @Test
     void canWithdrawToMinimumBalance() {
         SavingsAccount account =
                 new SavingsAccount(new AccountNumber("0000000002"), "Аюша", 2000, 1000);
-        boolean result = account.withdraw(1000);
-        assertTrue(result);
+        account.withdraw(1000);
         assertEquals(1000.0, account.getBalance(), 0.01);
     }
 }

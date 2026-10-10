@@ -25,21 +25,20 @@ public abstract class BankAccount{
         }
         balance = balance + amount;
     }
-    public abstract boolean withdraw(double amount);
+    public abstract void withdraw(double amount);
     public double getBalance() {
         return balance;
     }
-    protected boolean withdrawKeepMin(
+    protected void withdrawKeepMin(
             double amount,
             double minimumBalance){
         if (amount <= 0){
-            return false;
+            throw new IllegalArgumentException("сумма должна быть положительной");
         }
         if (balance - amount < minimumBalance){
-            return false;
+            throw new IllegalArgumentException("недостаточно средств");
         }
         balance = balance - amount;
-        return true;
     }
     @Override
     public String toString(){

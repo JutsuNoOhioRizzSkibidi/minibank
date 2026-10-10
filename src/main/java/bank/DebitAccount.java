@@ -8,7 +8,7 @@ public class DebitAccount extends BankAccount {
         super(number, owner, initialBalance);
     }
     @Override
-    public boolean withdraw(double amount){
-        return withdrawKeepMin(amount, 0);
+    public void withdraw(double amount){
+        withdrawKeepMin(amount, 0);
     }
 }

@@ -15,7 +15,7 @@ public class CreditAccount extends BankAccount{
     }
 
     @Override
-    public boolean withdraw(double amount) {
-        return withdrawKeepMin(amount, -creditLimit);
+    public void withdraw(double amount) {
+        withdrawKeepMin(amount, -creditLimit);
     }
 }

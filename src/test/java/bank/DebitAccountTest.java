@@ -10,16 +10,14 @@ public class DebitAccountTest {
     void cantWithdrawMoreThanBalance(){
         DebitAccount account =
                 new DebitAccount(new AccountNumber("0000000001"), "Алексей", 1000);
-        boolean result = account.withdraw(1500);
-        assertFalse(result);
+        assertThrows(InsufficientFundsException.class, () -> account.withdraw(1500));
         assertEquals(1000, account.getBalance(), 0.01);
     }
     @Test
     void withdrawWithinBalanceReducesBalance(){
         DebitAccount account =
                 new DebitAccount(new AccountNumber("0000000002"), "Олег", 1000);
-        boolean result = account.withdraw(500);
-        assertTrue(result);
+        account.withdraw(500);
         assertEquals(500, account.getBalance(), 0.01);
     }
     @Test
@@ -57,16 +55,14 @@ public class DebitAccountTest {
     void cantWithdrawNoAmount(){
         DebitAccount account =
                 new DebitAccount(new AccountNumber("0000000007"), "john", 1000);
-        boolean result = account.withdraw(0);
-        assertFalse(result);
+        assertThrows(IllegalArgumentException.class, () -> account.withdraw(0));
         assertEquals(1000, account.getBalance(),0.01);
     }
     @Test
     void cantWithdrawNegativeAmount(){
         DebitAccount account =
                 new DebitAccount(new AccountNumber("0000000009"), "Lisa", 1000);
-        boolean result = account.withdraw(-1);
-        assertFalse(result);
+        assertThrows(IllegalArgumentException.class, () -> account.withdraw(-500));
         assertEquals(1000, account.getBalance(), 0.01);
     }
 }

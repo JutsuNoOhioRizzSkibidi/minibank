@@ -13,7 +13,7 @@ public class TransferService{
             double amount
     )
     {
-        if (amount < 0){
+        if (amount <= 0){
             return false;
         }
         if (from.equals(to)){
@@ -21,7 +21,9 @@ public class TransferService{
         }
         double commission = commissionPolicy.calculate(amount);
         double totalAmount = amount + commission;
-        if (!from.withdraw(totalAmount)){
+        try {
+            from.withdraw(totalAmount);
+        } catch (InsufficientFundsException exception) {
             return false;
         }
         to.deposit(amount);

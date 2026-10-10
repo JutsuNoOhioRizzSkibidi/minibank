@@ -15,7 +15,7 @@ public class SavingsAccount extends BankAccount{
     }
 
     @Override
-    public boolean withdraw(double amount) {
-        return withdrawKeepMin(amount, minimumBalance);
+    public void withdraw(double amount) {
+        withdrawKeepMin(amount, minimumBalance);
     }
 }
