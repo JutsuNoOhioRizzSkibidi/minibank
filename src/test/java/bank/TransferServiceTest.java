@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class TransferServiceTest {
     @Test
@@ -20,8 +21,7 @@ public class TransferServiceTest {
                 new NoCommission(),
                 new ConsoleNotificationService()
         );
-        boolean result = service.transfer(from, to, 3000);
-        assertTrue(result);
+        service.transfer(from, to, 3000);
         assertEquals(7000.0, from.getBalance(), 0.01);
         assertEquals(5000.0, to.getBalance(), 0.01);
     }
@@ -34,8 +34,8 @@ public class TransferServiceTest {
                 new NoCommission(),
                 new ConsoleNotificationService()
         );
-        boolean result = service.transfer(from, to, 3000);
-        assertFalse(result);
+        assertThrows(InsufficientFundsException.class,
+                () -> service.transfer(from, to, 3000));
         assertEquals(1000.0, from.getBalance(), 0.01);
         assertEquals(2000.0, to.getBalance(), 0.01);
     }
@@ -48,8 +48,8 @@ public class TransferServiceTest {
         TransferService service = new TransferService(
                 new NoCommission(), new ConsoleNotificationService()
         );
-        boolean result = service.transfer(from, to, -500);
-        assertFalse(result);
+        assertThrows(IllegalArgumentException.class,
+                () -> service.transfer(from, to, -500));
         assertEquals(1000, from.getBalance(), 0.01);
         assertEquals(2000, to.getBalance(), 0.01);
     }
@@ -62,8 +62,9 @@ public class TransferServiceTest {
         TransferService service = new TransferService(
                 new NoCommission(), new ConsoleNotificationService()
         );
-        boolean result = service.transfer(from, to , 0);
-        assertFalse(result);
+        assertThrows(IllegalArgumentException.class,
+                () -> service.transfer(from, to, 0)
+        );
         assertEquals(1000, from.getBalance(), 0.01);
         assertEquals(2000, to.getBalance(), 0.01);
     }
@@ -73,8 +74,9 @@ public class TransferServiceTest {
         TransferService service = new TransferService(
                 new NoCommission(), new ConsoleNotificationService()
         );
-        boolean result = service.transfer(account, account, 100);
-        assertFalse(result);
+        assertThrows(IllegalArgumentException.class,
+                () -> service.transfer(account, account, 100)
+        );
         assertEquals(1000, account.getBalance(), 0.01);
     }
     @Test
@@ -86,8 +88,7 @@ public class TransferServiceTest {
         TransferService service = new TransferService(
                 new PercentCommission(1), new ConsoleNotificationService()
         );
-        boolean result = service.transfer(from, to, 500);
-        assertTrue(result);
+        service.transfer(from, to, 500);
         assertEquals(1495, from.getBalance(), 0.01);
         assertEquals(1500, to.getBalance(), 0.01);
     }
@@ -100,8 +101,9 @@ public class TransferServiceTest {
         TransferService service = new TransferService(
                 new PercentCommission(1), new ConsoleNotificationService()
         );
-        boolean result = service.transfer(from, to, 10000);
-        assertFalse(result);
+        assertThrows(InsufficientFundsException.class,
+                () -> service.transfer(from, to, 10000)
+        );
         assertEquals(10000, from.getBalance(), 0.01);
         assertEquals(2000, to.getBalance(), 0.01);
     }
@@ -115,8 +117,7 @@ public class TransferServiceTest {
                 new NoCommission(),
                 new ConsoleNotificationService()
         );
-        boolean result = service.transfer(from, to, 1500);
-        assertTrue(result);
+        service.transfer(from, to, 1500);
         assertEquals(3500.0, from.getBalance(), 0.01);
         assertEquals(3500.0, to.getBalance(), 0.01);
     }
@@ -129,8 +130,7 @@ public class TransferServiceTest {
         TransferService service = new TransferService(
                 new NoCommission(), new ConsoleNotificationService()
         );
-        boolean result = service.transfer(from, to, 4000);
-        assertTrue(result);
+        service.transfer(from, to, 4000);
         assertEquals(-3000, from.getBalance(), 0.01);
         assertEquals(6000, to.getBalance(), 0.01);
     }
@@ -143,8 +143,7 @@ public class TransferServiceTest {
         TransferService service = new TransferService(
                 new NoCommission(), new ConsoleNotificationService()
         );
-        boolean result = service.transfer(from, to, 4000);
-        assertTrue(result);
+        service.transfer(from, to, 4000);
         assertEquals(1000, from.getBalance(), 0.01);
         assertEquals(6000, to.getBalance(), 0.01);
     }
@@ -158,10 +157,9 @@ public class TransferServiceTest {
         TransferService service = new TransferService(
                 new NoCommission(), notificationService
         );
-        boolean result = service.transfer(from, to, 3000);
-        assertTrue(result);
+        service.transfer(from, to, 3000);
         assertEquals(1, notificationService.getNotificationCount());
-        assertEquals("перевод в размере3000.0 ед валюты выполнен", notificationService.getLastMessage());
+        assertEquals("перевод 3000.0 выполнен", notificationService.getLastMessage());
     }
     @Test
     void failTransferDontSendNotification(){
@@ -173,25 +171,49 @@ public class TransferServiceTest {
         TransferService service = new TransferService(
                 new NoCommission(), notificationService
         );
-        boolean result = service.transfer(from,  to, 3000);
-        assertFalse(result);
+        assertThrows(InsufficientFundsException.class,
+                () -> service.transfer(from, to, 3000)
+        );
         assertEquals(0, notificationService.getNotificationCount());
         assertNull(notificationService.getLastMessage());
+        assertEquals(1000.0, from.getBalance(), 0.01);
+        assertEquals(2000.0, to.getBalance(), 0.01);
     }
     @Test
     void canTransferBetweenDifferentAccountsOfSameOwner() {
         // Подготовка (Arrange)
-        BankAccount account = new DebitAccount(new AccountNumber("0000000025"), "Jojo", 1000
-        );
-        BankAccount account2 = new DebitAccount(new AccountNumber("0000000026"), "Jojo", 1000
-        );
+        BankAccount account = new DebitAccount(new AccountNumber("0000000025"), "Jojo", 1000);
+        BankAccount account2 = new DebitAccount(new AccountNumber("0000000026"), "Jojo", 1000);
         TransferService service = new TransferService(
                 new NoCommission(),
                 new ConsoleNotificationService()
         );
-        boolean result = service.transfer(account, account2, 100);
-        assertTrue(result);
+        service.transfer(account, account2, 100);
         assertEquals(900.0, account.getBalance(), 0.01);
         assertEquals(1100.0, account2.getBalance(), 0.01);
+    }
+    @Test
+    void transferAboveLimitIsRej(){
+        BankAccount from = new DebitAccount(new AccountNumber("0000000027"), "Sayo", 100000);
+        BankAccount to = new DebitAccount(new AccountNumber("0000000028"), "Kayo", 2000);
+        FakeNotification notificationService = new FakeNotification();
+        TransferService service = new TransferService(new NoCommission(), notificationService);
+        assertThrows(TransferLimitExceededException.class,
+                () -> service.transfer(from, to, 50001)
+        );
+        assertEquals(100000.0, from.getBalance(), 0.01);
+        assertEquals(2000.0, to.getBalance(), 0.01);
+        assertEquals(0, notificationService.getNotificationCount());
+    }
+    @Test
+    void transferAtLimitIsAllowed() {
+        BankAccount from = new DebitAccount(
+                new AccountNumber("0000000029"), "Олег", 60000);
+        BankAccount to = new DebitAccount(
+                new AccountNumber("0000000030"), "Мария", 2000);
+        TransferService service = new TransferService(new NoCommission(), new ConsoleNotificationService());
+        service.transfer(from, to, 50000);
+        assertEquals(10000.0, from.getBalance(), 0.01);
+        assertEquals(52000.0, to.getBalance(), 0.01);
     }
 }

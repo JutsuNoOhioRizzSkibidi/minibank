@@ -7,27 +7,25 @@ public class TransferService{
         this.commissionPolicy = commissionPolicy;
         this.notificationService = notificationService;
     }
-    public boolean transfer(
+    public void transfer(
             BankAccount from,
             BankAccount to,
             double amount
     )
     {
         if (amount <= 0){
-            return false;
+            throw new IllegalArgumentException("сумма должна быть положительной");
         }
         if (from.equals(to)){
-            return false;
+            throw new IllegalArgumentException("нельзя перевести на тот же счет");
+        }
+        if (amount >50_000){
+            throw new TransferLimitExceededException("превышен лимит перевода");
         }
         double commission = commissionPolicy.calculate(amount);
         double totalAmount = amount + commission;
-        try {
-            from.withdraw(totalAmount);
-        } catch (InsufficientFundsException exception) {
-            return false;
-        }
+        from.withdraw(totalAmount);
         to.deposit(amount);
-        notificationService.notify("перевод в размере" + amount + " ед валюты выполнен");
-        return true;
+        notificationService.notify("перевод " + amount + " выполнен");
     }
 }
