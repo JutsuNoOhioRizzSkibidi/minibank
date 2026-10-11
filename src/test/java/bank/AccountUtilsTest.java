@@ -3,6 +3,8 @@ package bank;
 import org.junit.jupiter.api.Test;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.util.ArrayList;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 public class AccountUtilsTest {
     @Test
@@ -47,5 +49,35 @@ public class AccountUtilsTest {
         List<BankAccount> accounts = List.of();
         double total = AccountUtils.totalBalance(accounts);
         assertEquals(0.0, total, 0.01);
+    }
+    @Test
+    void demoAccountsCanBeAddedToDebitAccountList() {
+        List<DebitAccount> accounts = new ArrayList<>();
+        AccountUtils.addDemoDebitAccounts(accounts);
+        assertEquals(2, accounts.size());
+        assertEquals(new AccountNumber("0000000001"), accounts.get(0).getId());
+        assertEquals(new AccountNumber("0000000002"), accounts.get(1).getId());
+    }
+    @Test
+    void demoAccountsCanBeAddedToBankAccountList() {
+        List<BankAccount> accounts = new ArrayList<>();
+        BankAccount existing = new SavingsAccount(new AccountNumber("0000000011"), "Аяна", 5000, 1000
+        );
+        accounts.add(existing);
+        AccountUtils.addDemoDebitAccounts(accounts);
+        assertEquals(3, accounts.size());
+        assertEquals(existing, accounts.get(0));
+        assertInstanceOf(DebitAccount.class, accounts.get(1));
+        assertInstanceOf(DebitAccount.class, accounts.get(2));
+    }
+    @Test
+    void demoAccountsCanBeAddedToObjectList() {
+        List<Object> values = new ArrayList<>();
+        values.add("привет");
+        AccountUtils.addDemoDebitAccounts(values);
+        assertEquals(3, values.size());
+        assertEquals("привет", values.get(0));
+        assertInstanceOf(DebitAccount.class, values.get(1));
+        assertInstanceOf(DebitAccount.class, values.get(2));
     }
 }
