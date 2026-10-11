@@ -1,6 +1,6 @@
 package bank;
 
-public abstract class BankAccount{
+public abstract class BankAccount implements Identifiable<AccountNumber>{
     private final AccountNumber number;
     private final String owner;
     private double balance;
@@ -62,5 +62,9 @@ public abstract class BankAccount{
     @Override
     public int hashCode(){
         return java.util.Objects.hashCode(number);
+    }
+    @Override
+    public AccountNumber getId(){
+        return number;
     }
 }

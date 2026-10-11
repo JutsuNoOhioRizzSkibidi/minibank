@@ -79,5 +79,11 @@ public class BankAccountTest {
         assertEquals(firstHashCode, secondHashCode);
 
     }
-
+    @Test
+    void getIdReturnsAccountNumberThroughInterface() {
+        AccountNumber number = new AccountNumber("0000000007");
+        Identifiable<AccountNumber> entity = new DebitAccount(number, "John", 1000);
+        AccountNumber actualId = entity.getId();
+        assertEquals(number, actualId);
+    }
 }
