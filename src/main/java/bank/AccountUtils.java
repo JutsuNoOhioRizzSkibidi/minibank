@@ -1,7 +1,7 @@
 package bank;
 
 import java.util.List;
-public class AccountUtils {
+public final class AccountUtils {
     public static double totalBalance(
             List<? extends BankAccount> accounts){
         double total = 0;
@@ -25,5 +25,18 @@ public class AccountUtils {
         for (T element : source){
             target.add(element);
         }
+    }
+    public static <T extends BankAccount> T richest(List<T> accounts) {
+        if (accounts.isEmpty()) {
+            throw new IllegalArgumentException("список счетов не должен быть пустым");
+        }
+        T richestAccount = accounts.get(0);
+        for (int i = 1; i < accounts.size(); i++) {
+            T current = accounts.get(i);
+            if (current.getBalance() > richestAccount.getBalance()) {
+                richestAccount = current;
+            }
+        }
+        return richestAccount;
     }
 }

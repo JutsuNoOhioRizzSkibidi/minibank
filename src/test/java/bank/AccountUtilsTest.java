@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.ArrayList;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class AccountUtilsTest {
     @Test
@@ -115,4 +116,36 @@ public class AccountUtilsTest {
         assertSame(second, target.get(1));
         assertSame(third, target.get(2));
     }
+    @Test
+    void richestReturnsAccountWithMaximumBalance() {
+        DebitAccount first = new DebitAccount(new AccountNumber("0000000017"), "dfd", 1000);
+        DebitAccount second = new DebitAccount(new AccountNumber("0000000018"), "dfdd", 5000);
+        DebitAccount third = new DebitAccount(new AccountNumber("0000000019"), "asdas", 2000);
+        List<DebitAccount> accounts = List.of(first, second, third);
+        DebitAccount result = AccountUtils.richest(accounts);
+        assertSame(second, result);
+    }
+    @Test
+    void richestRejectsEmptyList() {
+        List<DebitAccount> accounts = List.of();
+        assertThrows(IllegalArgumentException.class,
+                () -> AccountUtils.richest(accounts));
+    }
+    @Test
+    void richestReturnsOnlyAccount() {
+        SavingsAccount account = new SavingsAccount(new AccountNumber("0000000020"), "dsfdsf", 3000, 1000);
+        List<SavingsAccount> accounts = List.of(account);
+        SavingsAccount result = AccountUtils.richest(accounts);
+        assertSame(account, result);
+    }
+    @Test
+    void richestReturnsFirstAccountWhenMaximumBalancesAreEqual() {
+        DebitAccount smaller = new DebitAccount(new AccountNumber("0000000021"), "ddddd", 1000);
+        DebitAccount firstMaximum = new DebitAccount(new AccountNumber("0000000022"), "ssss", 5000);
+        DebitAccount secondMaximum = new DebitAccount(new AccountNumber("0000000023"), "qqqq", 5000);
+        List<DebitAccount> accounts = List.of(smaller, firstMaximum, secondMaximum);
+        DebitAccount result = AccountUtils.richest(accounts);
+        assertSame(firstMaximum, result);
+    }
+
 }
