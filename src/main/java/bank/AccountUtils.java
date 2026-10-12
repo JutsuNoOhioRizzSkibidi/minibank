@@ -19,4 +19,11 @@ public class AccountUtils {
                 new AccountNumber("0000000002"), "Tima", 2000)
         );
     }
+    public static <T> void copy(
+            List<? extends T> source,
+            List<? super T> target){
+        for (T element : source){
+            target.add(element);
+        }
+    }
 }

@@ -5,6 +5,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.ArrayList;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 public class AccountUtilsTest {
     @Test
@@ -79,5 +80,39 @@ public class AccountUtilsTest {
         assertEquals("привет", values.get(0));
         assertInstanceOf(DebitAccount.class, values.get(1));
         assertInstanceOf(DebitAccount.class, values.get(2));
+    }
+    @Test
+    void copyDebitAccountsToBankAccountList() {
+        DebitAccount account = new DebitAccount(new AccountNumber("0000000012"), "fgfg", 1000);
+        List<DebitAccount> source = List.of(account);
+        List<BankAccount> target = new ArrayList<>();
+        AccountUtils.copy(source, target);
+        assertEquals(1, target.size());
+        assertSame(account, target.get(0));
+        assertEquals(1, source.size());
+    }
+    @Test
+    void copyDebitAccountsToObjectList() {
+        DebitAccount account = new DebitAccount(new AccountNumber("0000000013"), "sadsadsa", 2000);
+        List<DebitAccount> source = List.of(account);
+        List<Object> target = new ArrayList<>();
+        target.add("begin");
+        AccountUtils.copy(source, target);
+        assertEquals(2, target.size());
+        assertEquals("begin", target.get(0));
+        assertSame(account, target.get(1));
+    }
+    @Test
+    void copyBankAccountsPreservesElementOrder() {
+        BankAccount first = new DebitAccount(new AccountNumber("0000000014"), "dfgfdgdf", 1000);
+        BankAccount second = new SavingsAccount(new AccountNumber("0000000015"), "dfgdfgfdg", 3000, 500);
+        BankAccount third = new CreditAccount(new AccountNumber("0000000016"), "dfgfdgfd", 2000, 5000);
+        List<BankAccount> source = List.of(first, second, third);
+        List<BankAccount> target = new ArrayList<>();
+        AccountUtils.copy(source, target);
+        assertEquals(3, target.size());
+        assertSame(first, target.get(0));
+        assertSame(second, target.get(1));
+        assertSame(third, target.get(2));
     }
 }
