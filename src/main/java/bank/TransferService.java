@@ -3,9 +3,13 @@ package bank;
 public class TransferService{
     private final CommissionPolicy commissionPolicy;
     private final NotificationService notificationService;
-    public TransferService(CommissionPolicy commissionPolicy, NotificationService notificationService){
+    private final BlockedAccountRegistry blockedAccounts;
+    public TransferService(CommissionPolicy commissionPolicy,
+                           NotificationService notificationService,
+                           BlockedAccountRegistry blockedAccounts){
         this.commissionPolicy = commissionPolicy;
         this.notificationService = notificationService;
+        this.blockedAccounts = blockedAccounts;
     }
     public void transfer(
             BankAccount from,
@@ -21,6 +25,9 @@ public class TransferService{
         }
         if (amount >50_000){
             throw new TransferLimitExceededException("превышен лимит перевода");
+        }
+        if (blockedAccounts.isBlocked(from.getId())){
+            throw new IllegalStateException("данный счет заблокирован");
         }
         double commission = commissionPolicy.calculate(amount);
         double totalAmount = amount + commission;
