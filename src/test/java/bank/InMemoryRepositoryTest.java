@@ -1,12 +1,16 @@
 package bank;
 
 import org.junit.jupiter.api.Test;
+
+import javax.management.ImmutableDescriptor;
+import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+
 
 public class InMemoryRepositoryTest {
     @Test
@@ -71,5 +75,45 @@ public class InMemoryRepositoryTest {
         boolean exists =
                 repository.existsById(new AccountNumber("0000000002"));
         assertFalse(exists);
+    }
+    @Test
+    void deleteByIdRemovesExistAccount(){
+        Repository<AccountNumber, BankAccount> repository =
+                new InMemoryRepository<>();
+        AccountNumber id = new AccountNumber("0000000001");
+        repository.save(new DebitAccount(id, "sanya", 1000));
+        boolean deleted = repository.deleteById(id);
+        assertTrue(deleted);
+        assertFalse(repository.existsById(id));
+        assertNull(repository.findById(id));
+        assertEquals(0, repository.size());
+    }
+    @Test
+    void deleteByIdReturnsFalseWhenAccountIsMiss(){
+        Repository<AccountNumber, BankAccount> repository =
+                new InMemoryRepository<>();
+        AccountNumber existingId = new AccountNumber("0000000001");
+        BankAccount account = new DebitAccount(existingId, "ALEX", 2000);
+        repository.save(account);
+        boolean deleted = repository.deleteById(new AccountNumber("0000000002"));
+        assertFalse(deleted);
+        assertEquals(1, repository.size());
+        assertSame(account, repository.findById(existingId));
+
+    }
+    @Test
+    void findAllReturnsAllSavedAccounts(){
+        Repository<AccountNumber, BankAccount> repository =
+                new InMemoryRepository<>();
+        BankAccount first = new DebitAccount(
+                new AccountNumber("0000000001"), "David", 1000
+        );
+        BankAccount second = new SavingsAccount(new AccountNumber("0000000002"), "Ulu", 3000,500);
+        repository.save(first);
+        repository.save(second);
+        List<BankAccount> accounts = repository.findAll();
+        assertEquals(2, accounts.size());
+        assertTrue(accounts.contains(first));
+        assertTrue(accounts.contains(second));
     }
 }
