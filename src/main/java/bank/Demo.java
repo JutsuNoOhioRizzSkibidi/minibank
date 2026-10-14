@@ -8,7 +8,8 @@ public class Demo {
                 new TransferService(
                         new NoCommission(),
                         new ConsoleNotificationService(),
-                        new BlockedAccountRegistry());
+                        new BlockedAccountRegistry(),
+                        new TransactionJournal());
         try {
             transferService.transfer(from, to, 5000);
             System.out.println("перевод завершён");
