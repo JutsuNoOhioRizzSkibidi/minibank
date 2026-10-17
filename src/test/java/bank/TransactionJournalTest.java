@@ -59,5 +59,20 @@ public class TransactionJournalTest {
         assertEquals(1, journal.size());
         assertEquals(List.of(transaction), journal.findAll());
     }
-
+    @Test
+    void addingTransactionJournalAndIndex(){
+        TransactionJournal journal = new TransactionJournal();
+        AccountNumber number = new AccountNumber("1234567890");
+        Transaction tx = new Transaction(
+                1L,
+                TransactionType.TRANSFER,
+                number,
+                1000,
+                TransactionStatus.SUCCESS
+        );
+        journal.add(tx);
+        assertEquals(List.of(tx), journal.findAll());
+        assertEquals(List.of(tx), journal.findByAccount(number));
+        assertEquals(List.of(tx), journal.findByAccountIndex(number));
+    }
 }
