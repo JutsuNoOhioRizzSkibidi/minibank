@@ -23,4 +23,17 @@ public class BankService {
     public int accountCount(){
         return accounts.size();
     }
+    public void transfer(
+            AccountNumber fromNumber, AccountNumber toNumber, double amount
+    ){
+        BankAccount from = accounts.findById(fromNumber);
+        BankAccount to = accounts.findById(toNumber);
+        if(from == null){
+            throw new IllegalArgumentException("счет отправителя не найден");
+        }
+        if (to == null){
+            throw new IllegalArgumentException("счет получателя не найден");
+        }
+        transferService.transfer(from, to, amount);
+    }
 }

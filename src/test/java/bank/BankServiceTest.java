@@ -99,4 +99,130 @@ public class BankServiceTest {
         assertThrows(IllegalArgumentException.class, () -> bank.openAccount(null));
         assertEquals(0, bank.accountCount());
     }
+    @Test
+    void transferByAccountNumberUpdatesBothBalance(){
+        FakeNotification notification = new FakeNotification();
+        TransactionJournal journal = new TransactionJournal();
+        TransferService transferService = new TransferService(
+                new NoCommission(),
+                notification,
+                new BlockedAccountRegistry(),
+                journal
+        );
+        BankService bank = new BankService(new InMemoryRepository<>(),
+                transferService);
+        AccountNumber fromNumber = new AccountNumber("1234567890");
+        AccountNumber toNumber = new AccountNumber("1234567899");
+        BankAccount from = new DebitAccount(fromNumber, "sanya", 10000);
+        BankAccount to = new DebitAccount(toNumber, "Aalex", 2000);
+        bank.openAccount(from);
+        bank.openAccount(to);
+        bank.transfer(fromNumber, toNumber, 3000);
+        assertEquals(7000.0, from.getBalance(), 0.01);
+        assertEquals(5000.0, to.getBalance(), 0.01);
+        assertEquals(1, notification.getNotificationCount());
+        assertEquals(1, journal.size());
+    }
+    @Test
+    void transferWithMissingSenderDoesNotChangeState() {
+        FakeNotification notification = new FakeNotification();
+        TransactionJournal journal = new TransactionJournal();
+        TransferService transferService = new TransferService(
+                new NoCommission(),
+                notification,
+                new BlockedAccountRegistry(),
+                journal
+        );
+        BankService bank = new BankService(new InMemoryRepository<>(),
+                transferService);
+        AccountNumber missingNumber = new AccountNumber("1234567890");
+        AccountNumber toNumber = new AccountNumber("1234567899");
+        BankAccount to = new DebitAccount(toNumber, "sanya", 2000);
+        bank.openAccount(to);
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                ()-> bank.transfer(missingNumber, toNumber, 1000));
+        assertEquals("счет отправителя не найден", exception.getMessage());
+        assertEquals(2000.0, to.getBalance(), 0.01);
+        assertEquals(1, bank.accountCount());
+        assertEquals(0, notification.getNotificationCount());
+        assertEquals(0, journal.size());
+    }
+    @Test
+    void transferWithMissingRecipientDOntChangeState(){
+        FakeNotification notification = new FakeNotification();
+        TransactionJournal journal = new TransactionJournal();
+        TransferService transferService = new TransferService(
+                new NoCommission(),
+                notification,
+                new BlockedAccountRegistry(),
+                journal
+        );
+        BankService bank = new BankService(new InMemoryRepository<>(),
+                transferService);
+        AccountNumber fromNumber = new AccountNumber("1234567890");
+        AccountNumber missingNumber = new AccountNumber("1234567899");
+        BankAccount from = new DebitAccount(fromNumber, "sanya", 5000);
+        bank.openAccount(from);
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                ()-> bank.transfer(fromNumber, missingNumber, 1000));
+        assertEquals("счет получателя не найден", exception.getMessage());
+        assertEquals(5000.0, from.getBalance(), 0.01);
+        assertEquals(1, bank.accountCount());
+        assertEquals(0, notification.getNotificationCount());
+        assertEquals(0, journal.size());
+    }
+    @Test
+    void transferFromBlockedAccountDontChangeState(){
+        FakeNotification notification = new FakeNotification();
+        BlockedAccountRegistry blockedAccount = new BlockedAccountRegistry();
+        TransactionJournal journal = new TransactionJournal();
+        TransferService transferService = new TransferService(
+                new NoCommission(),
+                notification,
+                blockedAccount,
+                journal
+        );
+        BankService bank = new BankService(new InMemoryRepository<>(),
+                transferService);
+        AccountNumber fromNumber = new AccountNumber("1234567890");
+        AccountNumber toNumber = new AccountNumber("1234567899");
+        BankAccount from = new DebitAccount(fromNumber, "sanya", 5000);
+        BankAccount to = new DebitAccount(toNumber, "Alex", 2000);
+        bank.openAccount(from);
+        bank.openAccount(to);
+        blockedAccount.block(fromNumber);
+        assertThrows(IllegalStateException.class,
+                () -> bank.transfer(fromNumber, toNumber, 1000));
+        assertEquals(5000.0, from.getBalance(), 0.01);
+        assertEquals(2000.0, to.getBalance(), 0.01);
+        assertEquals(0, notification.getNotificationCount());
+        assertEquals(0, journal.size());
+    }
+    @Test
+    void transferWithoutMoneyDontChangeState(){
+        FakeNotification notification = new FakeNotification();
+        TransactionJournal journal = new TransactionJournal();
+        TransferService transferService = new TransferService(
+                new NoCommission(),
+                notification,
+                new BlockedAccountRegistry(),
+                journal
+        );
+        BankService bank = new BankService(new InMemoryRepository<>(),
+                transferService);
+        AccountNumber fromNumber = new AccountNumber("1234567890");
+        AccountNumber toNumber = new AccountNumber("1234567899");
+        BankAccount from = new DebitAccount(fromNumber, "sanya", 1000);
+        BankAccount to = new DebitAccount(toNumber, "alex", 2000);
+        bank.openAccount(from);
+        bank.openAccount(to);
+        assertThrows(InsufficientFundsException.class,
+                () -> bank.transfer(fromNumber, toNumber, 3000));
+        assertEquals(1000.0, from.getBalance(), 0.01);
+        assertEquals(2000.0, to.getBalance(), 0.01);
+        assertEquals(0, notification.getNotificationCount());
+        assertEquals(0, journal.size());
+    }
+
+
 }
