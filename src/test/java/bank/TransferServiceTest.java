@@ -343,4 +343,44 @@ public class TransferServiceTest {
         assertEquals(0, journal.size());
         assertTrue(journal.findAll().isEmpty());
     }
+    @Test
+    void transferLambdaNoCommission(){
+        BankAccount from = new DebitAccount(
+                new AccountNumber("1234567890"), "Sanya", 5000
+        );
+        BankAccount to = new DebitAccount(
+                new AccountNumber("1234567891"), "Alex", 1000
+        );
+        CommissionPolicy noCommission = amount -> 0.0;
+        NotificationService console = message -> System.out.println(message);
+        TransferService service = new TransferService(
+                noCommission,
+                console,
+                new BlockedAccountRegistry(),
+                new TransactionJournal()
+        );
+        service.transfer(from, to, 1000);
+        assertEquals(4000.0, from.getBalance(), 0.01);
+        assertEquals(2000.0, to.getBalance(), 0.01);
+    }
+    @Test
+    void trasnferWithOnePercentCommissionLambda(){
+        BankAccount from = new DebitAccount(
+                new AccountNumber("1234567890"), "Alex", 5000
+        );
+        BankAccount to = new DebitAccount(
+                new AccountNumber("1234567891"), "Aleksandr", 1000
+        );
+        CommissionPolicy onePercent = amount -> amount * 0.01;
+        NotificationService console = System.out::println;
+        TransferService service = new TransferService(
+                onePercent,
+                console,
+                new BlockedAccountRegistry(),
+                new TransactionJournal()
+        );
+        service.transfer(from, to, 1000);
+        assertEquals(3990.0, from.getBalance(), 0.01);
+        assertEquals(2000.0, to.getBalance(), 0.01);
+    }
 }
