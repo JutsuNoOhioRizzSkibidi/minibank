@@ -2,6 +2,7 @@ package bank;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import java.util.List;
 
 public class BankServiceTest {
     @Test
@@ -223,6 +224,33 @@ public class BankServiceTest {
         assertEquals(0, notification.getNotificationCount());
         assertEquals(0, journal.size());
     }
+    @Test
+    void findAccountReturnesFilteredListWithoutExpStorage(){
+        TransferService transferService = new TransferService(
+                new NoCommission(),
+                new FakeNotification(),
+                new BlockedAccountRegistry(),
+                new TransactionJournal()
+        );
+        BankService bank = new BankService(
+                new InMemoryRepository<>(), transferService
+        );
+        BankAccount positive = new DebitAccount(
+                new AccountNumber("1234567890"),"S", 1000
+        );
+        BankAccount zero = new DebitAccount(
+                new AccountNumber("1234567899"), "K", 0
+        );
+        bank.openAccount(positive);
+        bank.openAccount(zero);
+        List<BankAccount> result = bank.findAccounts(
+                account -> account.getBalance() > 0
+        );
 
-
+        assertEquals(List.of(positive), result);
+        result.clear();
+        assertEquals(2, bank.accountCount());
+        assertSame(positive, bank.findAccount(positive.getId()));
+        assertSame(zero, bank.findAccount(zero.getId()));
+    }
 }
