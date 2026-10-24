@@ -324,7 +324,7 @@ public class TransferServiceTest {
 
     }
     @Test
-    void failedTrasnferDontAddTransactionToJournal(){
+    void failedTransferDontAddTransactionToJournal(){
         BankAccount from = new DebitAccount(
                 new AccountNumber("0000000001"), "Sanya", 1000
         );
