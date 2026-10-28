@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.function.Function;
+import java.util.function.Consumer;
 
 public class CollectionFunctions {
     public static <T> List<T> filter(
@@ -27,5 +28,11 @@ public class CollectionFunctions {
         }
         return result;
     }
-
+    public static <T> void forEach(
+            List<T> source,
+            Consumer<? super T> action){
+        for (T value : source){
+            action.accept(value);
+        }
+    }
 }

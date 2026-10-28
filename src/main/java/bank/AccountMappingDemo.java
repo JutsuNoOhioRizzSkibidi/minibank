@@ -2,6 +2,7 @@ package bank;
 
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Consumer;
 
 public class AccountMappingDemo {
     public static void main(String[] args){
@@ -22,9 +23,15 @@ public class AccountMappingDemo {
         List<AccountSummary> summaries =
                 CollectionFunctions.map(accounts, toSummary);
         System.out.println("краткие сведения о счетах: ");
-        for (AccountSummary summary: summaries){
-            System.out.println(summary);
-        }
+        /*
+        Consumer<AccountSummary> printer =
+                summary -> System.out.println(summary);
+        CollectionFunctions.forEach(summaries, printer);
+         */
+        CollectionFunctions.forEach(
+                summaries,
+                System.out::println
+        );
         Function<BankAccount, String> label =
                 account -> account.getId().value() + " : " + account.getBalance();
         List<String> labels =
