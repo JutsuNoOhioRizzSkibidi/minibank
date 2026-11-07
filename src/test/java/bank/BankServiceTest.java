@@ -8,13 +8,14 @@ import java.util.Comparator;
 public class BankServiceTest {
     @Test
     void registeredAccountCanBeFoundByNumber() {
+        BlockedAccountRegistry blockedAccounts = new BlockedAccountRegistry();
         TransferService transferService = new TransferService(
                 new NoCommission(),
                 new FakeNotification(),
                 new BlockedAccountRegistry(),
                 new TransactionJournal()
         );
-        BankService bank = new BankService(new InMemoryRepository<>(), transferService);
+        BankService bank = new BankService(new InMemoryRepository<>(), transferService, blockedAccounts);
         AccountNumber number = new AccountNumber("1234567890");
         BankAccount account = new DebitAccount(number, "sanya", 1000);
         bank.openAccount(account);
@@ -24,13 +25,14 @@ public class BankServiceTest {
 
     @Test
     void registeringNewAccountsIncreasesAccountCount() {
+        BlockedAccountRegistry blockedAccounts = new BlockedAccountRegistry();
         TransferService transferService = new TransferService(
                 new NoCommission(),
                 new FakeNotification(),
                 new BlockedAccountRegistry(),
                 new TransactionJournal()
         );
-        BankService bank = new BankService(new InMemoryRepository<>(), transferService);
+        BankService bank = new BankService(new InMemoryRepository<>(), transferService, blockedAccounts);
         BankAccount first = new DebitAccount(new AccountNumber("1234567890"), "sanya", 1000);
         BankAccount second = new SavingsAccount(new AccountNumber("1234567899"), "ALEX", 3000, 500);
         assertEquals(0, bank.accountCount());
@@ -42,13 +44,14 @@ public class BankServiceTest {
 
     @Test
     void registeringSameIdReplaceceExistingAccount() {
+        BlockedAccountRegistry blockedAccounts = new BlockedAccountRegistry();
         TransferService transferService = new TransferService(
                 new NoCommission(),
                 new FakeNotification(),
                 new BlockedAccountRegistry(),
                 new TransactionJournal()
         );
-        BankService bank = new BankService(new InMemoryRepository<>(), transferService);
+        BankService bank = new BankService(new InMemoryRepository<>(), transferService, blockedAccounts);
         AccountNumber number = new AccountNumber("1234567890");
         BankAccount original = new DebitAccount(number, "sanya", 1000);
         BankAccount replacement = new DebitAccount(new AccountNumber("1234567890"), "jojo", 2000);
@@ -60,13 +63,14 @@ public class BankServiceTest {
 
     @Test
     void closedAccountCanNoBeFound() {
+        BlockedAccountRegistry blockedAccounts = new BlockedAccountRegistry();
         TransferService transferService = new TransferService(
                 new NoCommission(),
                 new FakeNotification(),
                 new BlockedAccountRegistry(),
                 new TransactionJournal()
         );
-        BankService bank = new BankService(new InMemoryRepository<>(), transferService);
+        BankService bank = new BankService(new InMemoryRepository<>(), transferService, blockedAccounts);
         AccountNumber number = new AccountNumber("1234567890");
         bank.openAccount(new DebitAccount(number, "sanya", 1000));
         boolean closed = bank.closeAccount(number);
@@ -76,14 +80,15 @@ public class BankServiceTest {
     }
 
     @Test
-    void closingMissingAccountDontChangeRegisteredACcount() {
+    void closingMissingAccountDontChangeRegisteredAccount() {
+        BlockedAccountRegistry blockedAccounts = new BlockedAccountRegistry();
         TransferService transferService = new TransferService(
                 new NoCommission(),
                 new FakeNotification(),
                 new BlockedAccountRegistry(),
                 new TransactionJournal()
         );
-        BankService bank = new BankService(new InMemoryRepository<>(), transferService);
+        BankService bank = new BankService(new InMemoryRepository<>(), transferService, blockedAccounts);
         AccountNumber existingNumber = new AccountNumber("1234567890");
         BankAccount account = new DebitAccount(existingNumber, "sanya", 2000);
         bank.openAccount(account);
@@ -95,6 +100,7 @@ public class BankServiceTest {
 
     @Test
     void openingNullAccountThrowsException() {
+        BlockedAccountRegistry blockedAccounts = new BlockedAccountRegistry();
         TransferService transferService = new TransferService(
                 new NoCommission(),
                 new FakeNotification(),
@@ -102,13 +108,14 @@ public class BankServiceTest {
                 new TransactionJournal()
         );
         BankService bank = new BankService(new InMemoryRepository<>(),
-                transferService);
+                transferService, blockedAccounts);
         assertThrows(IllegalArgumentException.class, () -> bank.openAccount(null));
         assertEquals(0, bank.accountCount());
     }
 
     @Test
     void transferByAccountNumberUpdatesBothBalance() {
+        BlockedAccountRegistry blockedAccounts = new BlockedAccountRegistry();
         FakeNotification notification = new FakeNotification();
         TransactionJournal journal = new TransactionJournal();
         TransferService transferService = new TransferService(
@@ -118,7 +125,7 @@ public class BankServiceTest {
                 journal
         );
         BankService bank = new BankService(new InMemoryRepository<>(),
-                transferService);
+                transferService, blockedAccounts);
         AccountNumber fromNumber = new AccountNumber("1234567890");
         AccountNumber toNumber = new AccountNumber("1234567899");
         BankAccount from = new DebitAccount(fromNumber, "sanya", 10000);
@@ -136,6 +143,7 @@ public class BankServiceTest {
     void transferWithMissingSenderDoesNotChangeState() {
         FakeNotification notification = new FakeNotification();
         TransactionJournal journal = new TransactionJournal();
+        BlockedAccountRegistry blockedAccounts = new BlockedAccountRegistry();
         TransferService transferService = new TransferService(
                 new NoCommission(),
                 notification,
@@ -143,7 +151,7 @@ public class BankServiceTest {
                 journal
         );
         BankService bank = new BankService(new InMemoryRepository<>(),
-                transferService);
+                transferService, blockedAccounts);
         AccountNumber missingNumber = new AccountNumber("1234567890");
         AccountNumber toNumber = new AccountNumber("1234567899");
         BankAccount to = new DebitAccount(toNumber, "sanya", 2000);
@@ -159,6 +167,7 @@ public class BankServiceTest {
 
     @Test
     void transferWithMissingRecipientDOntChangeState() {
+        BlockedAccountRegistry blockedAccounts = new BlockedAccountRegistry();
         FakeNotification notification = new FakeNotification();
         TransactionJournal journal = new TransactionJournal();
         TransferService transferService = new TransferService(
@@ -168,7 +177,7 @@ public class BankServiceTest {
                 journal
         );
         BankService bank = new BankService(new InMemoryRepository<>(),
-                transferService);
+                transferService, blockedAccounts);
         AccountNumber fromNumber = new AccountNumber("1234567890");
         AccountNumber missingNumber = new AccountNumber("1234567899");
         BankAccount from = new DebitAccount(fromNumber, "sanya", 5000);
@@ -185,23 +194,24 @@ public class BankServiceTest {
     @Test
     void transferFromBlockedAccountDontChangeState() {
         FakeNotification notification = new FakeNotification();
-        BlockedAccountRegistry blockedAccount = new BlockedAccountRegistry();
         TransactionJournal journal = new TransactionJournal();
+        BlockedAccountRegistry blockedAccounts = new BlockedAccountRegistry();
+
         TransferService transferService = new TransferService(
                 new NoCommission(),
                 notification,
-                blockedAccount,
+                blockedAccounts,
                 journal
         );
         BankService bank = new BankService(new InMemoryRepository<>(),
-                transferService);
+                transferService, blockedAccounts);
         AccountNumber fromNumber = new AccountNumber("1234567890");
         AccountNumber toNumber = new AccountNumber("1234567899");
         BankAccount from = new DebitAccount(fromNumber, "sanya", 5000);
         BankAccount to = new DebitAccount(toNumber, "Alex", 2000);
         bank.openAccount(from);
         bank.openAccount(to);
-        blockedAccount.block(fromNumber);
+        blockedAccounts.block(fromNumber);
         assertThrows(IllegalStateException.class,
                 () -> bank.transfer(fromNumber, toNumber, 1000));
         assertEquals(5000.0, from.getBalance(), 0.01);
@@ -214,6 +224,7 @@ public class BankServiceTest {
     void transferWithoutMoneyDontChangeState() {
         FakeNotification notification = new FakeNotification();
         TransactionJournal journal = new TransactionJournal();
+        BlockedAccountRegistry blockedAccounts = new BlockedAccountRegistry();
         TransferService transferService = new TransferService(
                 new NoCommission(),
                 notification,
@@ -221,7 +232,7 @@ public class BankServiceTest {
                 journal
         );
         BankService bank = new BankService(new InMemoryRepository<>(),
-                transferService);
+                transferService, blockedAccounts);
         AccountNumber fromNumber = new AccountNumber("1234567890");
         AccountNumber toNumber = new AccountNumber("1234567899");
         BankAccount from = new DebitAccount(fromNumber, "sanya", 1000);
@@ -238,6 +249,7 @@ public class BankServiceTest {
 
     @Test
     void findAccountReturnesFilteredListWithoutExpStorage() {
+        BlockedAccountRegistry blockedAccounts = new BlockedAccountRegistry();
         TransferService transferService = new TransferService(
                 new NoCommission(),
                 new FakeNotification(),
@@ -245,7 +257,7 @@ public class BankServiceTest {
                 new TransactionJournal()
         );
         BankService bank = new BankService(
-                new InMemoryRepository<>(), transferService
+                new InMemoryRepository<>(), transferService, blockedAccounts
         );
         BankAccount positive = new DebitAccount(
                 new AccountNumber("1234567890"), "S", 1000
@@ -268,6 +280,7 @@ public class BankServiceTest {
 
     @Test
     void aaccountsAreSortedByBalanceAscending() {
+        BlockedAccountRegistry blockedAccounts = new BlockedAccountRegistry();
         TransferService transferService = new TransferService(
                 new NoCommission(),
                 new FakeNotification(),
@@ -275,7 +288,7 @@ public class BankServiceTest {
                 new TransactionJournal()
         );
         BankService bank = new BankService(
-                new InMemoryRepository<>(), transferService
+                new InMemoryRepository<>(), transferService, blockedAccounts
         );
         BankAccount first = new DebitAccount(
                 new AccountNumber("1234567890"), "Sanya", 5000
@@ -299,6 +312,7 @@ public class BankServiceTest {
 
     @Test
     void accountsAreSortedByBalanceDescending() {
+        BlockedAccountRegistry blockedAccounts = new BlockedAccountRegistry();
         TransferService transferService = new TransferService(
                 new NoCommission(),
                 new FakeNotification(),
@@ -306,7 +320,7 @@ public class BankServiceTest {
                 new TransactionJournal()
         );
         BankService bank = new BankService(
-                new InMemoryRepository<>(), transferService
+                new InMemoryRepository<>(), transferService, blockedAccounts
         );
         BankAccount first = new DebitAccount(
                 new AccountNumber("1234567890"), "sanya1", 5000
@@ -335,6 +349,7 @@ public class BankServiceTest {
 
     @Test
     void accountsAreSortedByNumber() {
+        BlockedAccountRegistry blockedAccounts = new BlockedAccountRegistry();
         TransferService transferService = new TransferService(
                 new NoCommission(),
                 new FakeNotification(),
@@ -342,7 +357,7 @@ public class BankServiceTest {
                 new TransactionJournal()
         );
         BankService bank = new BankService(
-                new InMemoryRepository<>(), transferService
+                new InMemoryRepository<>(), transferService, blockedAccounts
         );
         BankAccount first = new DebitAccount(
                 new AccountNumber("1234567890"), "sanya1", 1000
@@ -364,6 +379,7 @@ public class BankServiceTest {
 
     @Test
     void accountsAreSortedByTypeThenBalance() {
+        BlockedAccountRegistry blockedAccounts = new BlockedAccountRegistry();
         TransferService transferService = new TransferService(
                 new NoCommission(),
                 new FakeNotification(),
@@ -371,7 +387,7 @@ public class BankServiceTest {
                 new TransactionJournal()
         );
         BankService bank = new BankService(
-                new InMemoryRepository<>(), transferService
+                new InMemoryRepository<>(), transferService, blockedAccounts
         );
         BankAccount debitHigh = new DebitAccount(
                 new AccountNumber("1234567890"), "Sanya", 5000

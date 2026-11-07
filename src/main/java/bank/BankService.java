@@ -8,10 +8,13 @@ import java.util.Comparator;
 public class BankService {
     private final Repository<AccountNumber, BankAccount> accounts;
     private final TransferService transferService;
+    private final BlockedAccountRegistry blockedAccounts;
     public BankService(Repository<AccountNumber, BankAccount> accounts,
-                       TransferService transferService){
+                       TransferService transferService,
+                       BlockedAccountRegistry blockedAccounts){
         this.accounts = accounts;
         this.transferService = transferService;
+        this.blockedAccounts = blockedAccounts;
 
     }
     public void openAccount(BankAccount account){
@@ -94,5 +97,15 @@ public class BankService {
     public List<BankAccount> sortedByOwnerThenNumber(){
         return accounts.findAll().stream().sorted(Comparator.comparing(BankAccount::getOwner)
                 .thenComparing(account -> account.getId().value())).toList();
+    }
+    public boolean hasBlockedAccounts(){
+        return accounts.findAll().stream().anyMatch(account ->
+                blockedAccounts.isBlocked(account.getId()));
+    }
+    public boolean allAccountsPositive(){
+        return accounts.findAll().stream().allMatch(account -> account.getBalance() > 0);
+    }
+    public boolean noCreditAccounts(){
+        return accounts.findAll().stream().noneMatch(CreditAccount.class::isInstance);
     }
 }

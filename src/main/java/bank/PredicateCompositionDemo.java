@@ -15,7 +15,8 @@ public class PredicateCompositionDemo {
         );
         BankService bank = new BankService(
                 new InMemoryRepository<>(),
-                transferService
+                transferService,
+                blockedAccounts
         );
         BankAccount first = new DebitAccount(
                 new AccountNumber("1234567890"), "sanya", 150_000
