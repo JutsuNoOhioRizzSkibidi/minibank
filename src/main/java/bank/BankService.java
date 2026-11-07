@@ -65,5 +65,14 @@ public class BankService {
         return accounts.findAll().stream().filter(account ->
                 java.util.Objects.equals(account.getOwner(), owner)).toList();
     }
-
+    private AccountSummary toSummary(BankAccount account){
+        return new AccountSummary(
+                account.getId(),
+                account.getClass().getSimpleName(),
+                account.getBalance()
+        );
+    }
+    public List<AccountSummary> getAccountSummaries(){
+        return accounts.findAll().stream().map(this::toSummary).toList();
+    }
 }
