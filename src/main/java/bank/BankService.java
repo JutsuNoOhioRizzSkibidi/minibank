@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Optional;
+import java.util.OptionalDouble;
 
 public class BankService {
     private final Repository<AccountNumber, BankAccount> accounts;
@@ -111,5 +112,17 @@ public class BankService {
     }
     public Optional<BankAccount> findFirstRichAccount(double minBalance){
         return accounts.findAll().stream().filter(account -> account.getBalance() >= minBalance).findFirst();
+    }
+    public double totalBalance(){
+        return accounts.findAll().stream()
+                .mapToDouble(BankAccount::getBalance).sum();
+    }
+    public OptionalDouble avgBalance(){
+        return accounts.findAll().stream()
+                .mapToDouble(BankAccount::getBalance).average();
+    }
+    public Optional<BankAccount> richestAccount(){
+        return accounts.findAll().stream()
+                .max(Comparator.comparingDouble(BankAccount::getBalance));
     }
 }
