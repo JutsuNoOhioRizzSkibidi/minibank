@@ -12,6 +12,7 @@ public class BankService {
                        TransferService transferService){
         this.accounts = accounts;
         this.transferService = transferService;
+
     }
     public void openAccount(BankAccount account){
         if (account == null){
@@ -54,4 +55,15 @@ public class BankService {
         result.sort(comparator);
         return result;
     }
+    public List<BankAccount> findRichAccounts(double minBalance){
+        return accounts.findAll().stream().filter(account -> account.getBalance() >= minBalance).toList();
+    }
+    public List<BankAccount> findDebitAccounts(){
+        return accounts.findAll().stream().filter(DebitAccount.class::isInstance).toList();
+    }
+    public List<BankAccount> findAccountsByOwner(String owner) {
+        return accounts.findAll().stream().filter(account ->
+                java.util.Objects.equals(account.getOwner(), owner)).toList();
+    }
+
 }

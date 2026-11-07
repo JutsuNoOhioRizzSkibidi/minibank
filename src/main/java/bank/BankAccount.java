@@ -29,6 +29,7 @@ public abstract class BankAccount implements Identifiable<AccountNumber>{
     public double getBalance() {
         return balance;
     }
+    public String getOwner(){ return owner;}
     protected void withdrawKeepMin(
             double amount,
             double minimumBalance){
@@ -67,4 +68,5 @@ public abstract class BankAccount implements Identifiable<AccountNumber>{
     public AccountNumber getId(){
         return number;
     }
+
 }
