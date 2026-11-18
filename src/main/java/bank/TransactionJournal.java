@@ -3,6 +3,7 @@ package bank;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Iterator;
+import java.util.stream.Collectors;
 
 public class TransactionJournal {
     private final List<Transaction> transactions = new ArrayList<>();
@@ -31,13 +32,9 @@ public class TransactionJournal {
         }
     }
     public List<Transaction> findByAccount(AccountNumber number) {
-        List<Transaction> result = new ArrayList<>();
-        for (Transaction tx : transactions) {
-            if (tx.account().equals(number)) {
-                result.add(tx);
-            }
-        }
-        return result;
+        return transactions.stream()
+                .filter(tx -> tx.account().equals(number))
+                .collect(Collectors.toCollection(ArrayList::new));
     }
     public List<Transaction> findByAccountIndex(AccountNumber number){
         return index.findByAccount(number);

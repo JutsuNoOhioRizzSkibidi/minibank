@@ -1,14 +1,12 @@
 package bank;
 
 import java.util.List;
+import java.util.Comparator;
+
 public final class AccountUtils {
     public static double totalBalance(
             List<? extends BankAccount> accounts){
-        double total = 0;
-        for (BankAccount account : accounts){
-            total += account.getBalance();
-        }
-        return total;
+        return accounts.stream().mapToDouble(BankAccount::getBalance).sum();
     }
     public static void addDemoDebitAccounts(
             List<? super DebitAccount> target){
@@ -27,16 +25,7 @@ public final class AccountUtils {
         }
     }
     public static <T extends BankAccount> T richest(List<T> accounts) {
-        if (accounts.isEmpty()) {
-            throw new IllegalArgumentException("список счетов не должен быть пустым");
-        }
-        T richestAccount = accounts.get(0);
-        for (int i = 1; i < accounts.size(); i++) {
-            T current = accounts.get(i);
-            if (current.getBalance() > richestAccount.getBalance()) {
-                richestAccount = current;
-            }
-        }
-        return richestAccount;
+        return accounts.stream().max(Comparator.comparingDouble(BankAccount::getBalance))
+                .orElseThrow(() -> new IllegalArgumentException("пустой"));
     }
 }
