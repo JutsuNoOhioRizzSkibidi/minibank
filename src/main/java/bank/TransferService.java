@@ -2,15 +2,23 @@ package bank;
 
 public class TransferService{
     private final CommissionPolicy commissionPolicy;
-    private final NotificationService notificationService;
+    private final TransferEventPublisher publisher;
     private final BlockedAccountRegistry blockedAccounts;
     private final TransactionJournal journal;
+
     public TransferService(CommissionPolicy commissionPolicy,
                            NotificationService notificationService,
                            BlockedAccountRegistry blockedAccounts,
                            TransactionJournal journal){
+        this(commissionPolicy, new TransferEventPublisher(), blockedAccounts, journal);
+        publisher.subscribe(new TransferNotificationListener(notificationService));
+    }
+    public TransferService(CommissionPolicy commissionPolicy,
+                           TransferEventPublisher publisher,
+                           BlockedAccountRegistry blockedAccounts,
+                           TransactionJournal journal){
         this.commissionPolicy = commissionPolicy;
-        this.notificationService = notificationService;
+        this.publisher = publisher;
         this.blockedAccounts = blockedAccounts;
         this.journal = journal;
     }
@@ -36,9 +44,14 @@ public class TransferService{
         double totalAmount = amount + commission;
         from.withdraw(totalAmount);
         to.deposit(amount);
-        journal.add(new Transaction((long) journal.size()+1,
-        TransactionType.TRANSFER, from.getId(), amount,
-        TransactionStatus.SUCCESS));
-        notificationService.notify("перевод " + amount + " выполнен");
+        Transaction transaction = new Transaction(
+                (long) journal.size()+1,
+                TransactionType.TRANSFER,
+                from.getId(),
+                amount,
+                TransactionStatus.SUCCESS
+        );
+        journal.add(transaction);
+        publisher.publish(transaction);
     }
 }
