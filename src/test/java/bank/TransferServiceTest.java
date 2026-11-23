@@ -1,7 +1,12 @@
 package bank;
 
+import bank.adapters.ConsoleNotificationService;
+import bank.application.BlockedAccountRegistry;
+import bank.application.TransactionJournal;
+import bank.application.TransferService;
+import bank.domain.*;
+import bank.ports.NotificationService;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestClassOrder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;

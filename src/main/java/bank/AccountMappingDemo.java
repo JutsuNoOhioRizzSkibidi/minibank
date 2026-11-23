@@ -1,8 +1,13 @@
 package bank;
 
+import bank.application.AccountSummary;
+import bank.domain.AccountNumber;
+import bank.domain.BankAccount;
+import bank.domain.DebitAccount;
+import bank.domain.SavingsAccount;
+
 import java.util.List;
 import java.util.function.Function;
-import java.util.function.Consumer;
 
 public class AccountMappingDemo {
     public static void main(String[] args){

@@ -1,6 +1,8 @@
 package bank;
 
-public class FakeNotification implements NotificationService{
+import bank.ports.NotificationService;
+
+public class FakeNotification implements NotificationService {
     private String lastMessage;
     private int notificationCount;
     @Override

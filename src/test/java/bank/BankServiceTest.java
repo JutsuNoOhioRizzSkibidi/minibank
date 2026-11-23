@@ -1,5 +1,11 @@
 package bank;
 
+import bank.adapters.InMemoryRepository;
+import bank.application.BankService;
+import bank.application.BlockedAccountRegistry;
+import bank.application.TransactionJournal;
+import bank.application.TransferService;
+import bank.domain.*;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.List;

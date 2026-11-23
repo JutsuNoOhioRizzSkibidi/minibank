@@ -1,5 +1,6 @@
 package bank;
 
+import bank.domain.*;
 import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.function.Predicate;

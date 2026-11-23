@@ -1,5 +1,9 @@
 package bank;
 
+import bank.adapters.CountingNotificationDecorator;
+import bank.adapters.LoggingNotificationDecorator;
+import bank.adapters.PrefixNotificationDecorator;
+import bank.ports.NotificationService;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 

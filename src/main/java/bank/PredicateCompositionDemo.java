@@ -1,5 +1,12 @@
 package bank;
 
+import bank.adapters.InMemoryRepository;
+import bank.application.BankService;
+import bank.application.BlockedAccountRegistry;
+import bank.application.TransactionJournal;
+import bank.application.TransferService;
+import bank.domain.*;
+
 import java.util.List;
 import java.util.function.Predicate;
 

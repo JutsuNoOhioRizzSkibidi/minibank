@@ -1,5 +1,8 @@
 package bank;
 
+import bank.domain.AccountNumber;
+import bank.domain.CreditAccount;
+import bank.domain.InsufficientFundsException;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;

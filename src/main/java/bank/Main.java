@@ -1,4 +1,10 @@
 package bank;
+
+import bank.domain.AccountNumber;
+import bank.domain.Transaction;
+import bank.domain.TransactionStatus;
+import bank.domain.TransactionType;
+
 public class Main {
     public static void main(String[] args) {
         Transaction deposit = new Transaction(

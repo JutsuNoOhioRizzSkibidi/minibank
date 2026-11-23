@@ -1,5 +1,11 @@
 package bank;
 
+import bank.adapters.ConsoleNotificationService;
+import bank.application.BlockedAccountRegistry;
+import bank.application.TransactionJournal;
+import bank.application.TransferService;
+import bank.domain.*;
+
 public class Demo {
     public static void main(String[] args) {
         BankAccount from = new DebitAccount(new AccountNumber("1234567890"), "Vanya", 1000);

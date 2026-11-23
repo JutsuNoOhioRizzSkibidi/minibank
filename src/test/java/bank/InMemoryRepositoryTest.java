@@ -1,8 +1,13 @@
 package bank;
 
+import bank.adapters.InMemoryRepository;
+import bank.domain.AccountNumber;
+import bank.domain.BankAccount;
+import bank.domain.DebitAccount;
+import bank.domain.SavingsAccount;
+import bank.ports.Repository;
 import org.junit.jupiter.api.Test;
 
-import javax.management.ImmutableDescriptor;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;

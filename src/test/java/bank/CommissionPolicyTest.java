@@ -1,5 +1,9 @@
 package bank;
 
+import bank.domain.CommissionPolicy;
+import bank.domain.FixedCommissionPolicy;
+import bank.domain.ProgressiveCommissionPolicy;
+import bank.domain.WeekendCommissionPolicy;
 import org.junit.jupiter.api.Test;
 import java.time.Clock;
 import java.time.Instant;

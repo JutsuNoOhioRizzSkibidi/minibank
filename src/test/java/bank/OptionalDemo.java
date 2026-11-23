@@ -1,5 +1,16 @@
 package bank;
 
+import bank.adapters.ConsoleNotificationService;
+import bank.adapters.InMemoryRepository;
+import bank.application.BankService;
+import bank.application.BlockedAccountRegistry;
+import bank.application.TransactionJournal;
+import bank.application.TransferService;
+import bank.domain.AccountNumber;
+import bank.domain.BankAccount;
+import bank.domain.DebitAccount;
+import bank.domain.NoCommission;
+
 public class OptionalDemo {
     public static void main(String[] args){
         BlockedAccountRegistry blockedAccounts =
