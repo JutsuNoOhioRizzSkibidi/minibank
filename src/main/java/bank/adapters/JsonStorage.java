@@ -2,6 +2,7 @@ package bank.adapters;
 
 import bank.adapters.dto.AccountDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,5 +16,11 @@ public class JsonStorage{
         }
         mapper.writerWithDefaultPrettyPrinter()
                 .writeValue(path.toFile(), accounts);
+    }
+    public List<AccountDto> loadAccounts(Path path) throws IOException{
+        return mapper.readValue(
+                path.toFile(),
+                new TypeReference<List<AccountDto>>() {}
+        );
     }
 }
