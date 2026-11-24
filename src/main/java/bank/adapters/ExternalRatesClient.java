@@ -5,9 +5,12 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import bank.adapters.dto.RateDto;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ExternalRatesClient{
     private final HttpClient client = HttpClient.newHttpClient();
+    private final ObjectMapper mapper = new ObjectMapper();
     public String get(String url) throws IOException, InterruptedException{
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
@@ -21,5 +24,13 @@ public class ExternalRatesClient{
             throw new IllegalStateException("HTTP error: " + response.statusCode());
         }
         return response.body();
+    }
+    public RateDto getRate(String url) throws IOException, InterruptedException{
+        String body = get(url);
+        RateDto rate = mapper.readValue(
+                body,
+                RateDto.class
+        );
+        return rate;
     }
 }

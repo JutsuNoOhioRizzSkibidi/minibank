@@ -14,6 +14,8 @@ import bank.adapters.dto.AccountDto;
 import bank.domain.AccountNumber;
 import bank.domain.DebitAccount;
 import bank.adapters.ExternalRatesClient;
+import bank.adapters.dto.RateDto;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Main {
     public static void main(String[] args) throws IOException, InterruptedException{
