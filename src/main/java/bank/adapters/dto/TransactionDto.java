@@ -23,4 +23,13 @@ public record TransactionDto(
                 transaction.status().name()
         );
     }
+    public static TransactionDto fromDomain(Transaction transaction){
+        return new TransactionDto(
+                transaction.id(),
+                transaction.account().value(),
+                "",
+                transaction.amount(),
+                transaction.status().name()
+        );
+    }
 }
