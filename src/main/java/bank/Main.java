@@ -13,10 +13,10 @@ import bank.adapters.JsonStorage;
 import bank.adapters.dto.AccountDto;
 import bank.domain.AccountNumber;
 import bank.domain.DebitAccount;
-
+import bank.adapters.ExternalRatesClient;
 
 public class Main {
-    public static void main(String[] args) throws IOException{
+    public static void main(String[] args) throws IOException, InterruptedException{
         TransactionFileImporter importer = new TransactionFileImporter();
 
         List<TransactionDto> transactions = importer.load(
@@ -42,5 +42,8 @@ public class Main {
         );
         storage.saveAccounts(Path.of("reports", "accounts.json"), accounts);
         System.out.println("счета сохранены в JSON");
+        ExternalRatesClient client = new ExternalRatesClient();
+        String response = client.get("https://httpbin.org/get");
+        System.out.println(response);
     }
 }
