@@ -3,6 +3,7 @@ package bank.application;
 import bank.ports.Repository;
 import bank.domain.AccountNumber;
 import bank.domain.BankAccount;
+import bank.annotations.RequiresRole;
 
 import java.util.Optional;
 
@@ -20,6 +21,7 @@ public class AccountService{
     public Optional<BankAccount> find(AccountNumber number){
         return Optional.ofNullable(accounts.findById(number));
     }
+    @RequiresRole("ADMIN")
     public boolean close(AccountNumber number){
         return accounts.deleteById(number);
     }

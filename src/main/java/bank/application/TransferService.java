@@ -2,7 +2,9 @@ package bank.application;
 
 import bank.ports.NotificationService;
 import bank.domain.*;
+import bank.annotations.Audited;
 
+@Audited
 public class TransferService{
     private final CommissionPolicy commissionPolicy;
     private final TransferEventPublisher publisher;
