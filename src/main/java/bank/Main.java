@@ -4,32 +4,23 @@ import bank.domain.AccountNumber;
 import bank.domain.Transaction;
 import bank.domain.TransactionStatus;
 import bank.domain.TransactionType;
+import bank.adapters.TransactionFileImporter;
+import bank.adapters.dto.TransactionDto;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
+
 
 public class Main {
-    public static void main(String[] args) {
-        Transaction deposit = new Transaction(
-                1L,
-                TransactionType.DEPOSIT,
-                new AccountNumber("1234567890"),
-                5000,
-                TransactionStatus.SUCCESS
+    public static void main(String[] args) throws IOException{
+        TransactionFileImporter importer = new TransactionFileImporter();
+
+        List<TransactionDto> transactions = importer.load(
+                Path.of("transactions.txt")
         );
-        Transaction withdrawal = new Transaction(
-                2L,
-                TransactionType.WITHDRAWAL,
-                new AccountNumber("1234567890"),
-                10000,
-                TransactionStatus.REJECTED
-        );
-        Transaction transfer = new Transaction(
-                3L,
-                TransactionType.TRANSFER,
-                new AccountNumber("0987654321"),
-                1500,
-                TransactionStatus.SUCCESS
-        );
-        System.out.println(deposit);
-        System.out.println(withdrawal);
-        System.out.println(transfer);
+        for (TransactionDto dto : transactions){
+            System.out.println(dto.id() + " " + dto.from() + " " +
+                    dto.amount() + " " + dto.status());
+        }
     }
 }
