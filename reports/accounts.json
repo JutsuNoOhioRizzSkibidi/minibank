@@ -1,0 +1,11 @@
+[ {
+  "number" : "1234567890",
+  "owner" : "sanya",
+  "balance" : 10000.0,
+  "type" : "DebitAccount"
+}, {
+  "number" : "1234567891",
+  "owner" : "sanya1",
+  "balance" : 2000.0,
+  "type" : "DebitAccount"
+} ]
