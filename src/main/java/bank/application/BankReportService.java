@@ -1,17 +1,17 @@
+
 package bank.application;
 
-import bank.ports.Repository;
 import bank.domain.AccountNumber;
 import bank.domain.BankAccount;
+import bank.ports.ReadRepository;
 
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.OptionalDouble;
 
 public class BankReportService{
-    private final Repository<AccountNumber, BankAccount> accounts;
-
-    public BankReportService(Repository<AccountNumber, BankAccount> accounts){
+    private final ReadRepository<AccountNumber, BankAccount> accounts;
+    public BankReportService(ReadRepository<AccountNumber, BankAccount> accounts){
         this.accounts = accounts;
     }
     public double totalBalance(){
