@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class TransactionFileImporter{
     public List<TransactionDto> load(Path path) throws IOException{
@@ -49,5 +50,13 @@ public class TransactionFileImporter{
             }
         }
         return transactions;
+    }
+    public long countSuccessful(Path path) throws IOException{
+        try (Stream<String> lines = Files.lines(path)){
+            return lines
+                    .skip(1)
+                    .filter(line -> line.contains("SUCCESS"))
+                    .count();
+        }
     }
 }

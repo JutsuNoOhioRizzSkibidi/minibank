@@ -22,5 +22,9 @@ public class Main {
             System.out.println(dto.id() + " " + dto.from() + " " +
                     dto.amount() + " " + dto.status());
         }
+        long count = importer.countSuccessful(
+                Path.of("transactions.txt")
+        );
+        System.out.println("успешных транзакций: " + count);
     }
 }
