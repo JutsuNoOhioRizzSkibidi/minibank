@@ -16,6 +16,9 @@ import bank.domain.DebitAccount;
 import bank.adapters.ExternalRatesClient;
 import bank.adapters.dto.RateDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import bank.adapters.AnnotationInspector;
+import bank.application.TransferService;
+import bank.application.AccountService;
 
 public class Main {
     public static void main(String[] args) throws IOException, InterruptedException{
@@ -47,5 +50,9 @@ public class Main {
         ExternalRatesClient client = new ExternalRatesClient();
         String response = client.get("https://httpbin.org/get");
         System.out.println(response);
+        AnnotationInspector inspector = new AnnotationInspector();
+        inspector.inspect(TransferService.class);
+        System.out.println();
+        inspector.inspect(AccountService.class);
     }
 }
