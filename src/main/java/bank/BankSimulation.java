@@ -30,17 +30,22 @@ public class BankSimulation{
                 new BlockedAccountRegistry(),
                 new TransactionJournal()
         );
-        List<Thread> clients = new ArrayList<>();
-        for (int i = 0; i < 5; i++){
-            Thread thread = new Thread(
-                    new BankClient(i, accounts, transferService, lock, failed)
-            );
-            clients.add(thread);
-            thread.start();
-        }
-        for (Thread thread : clients){
-            thread.join();
-        }
+        Deadlock.run(
+                transferService,
+                accounts.get(0),
+                accounts.get(1)
+        );
+//        List<Thread> clients = new ArrayList<>();
+//        for (int i = 0; i < 5; i++){
+//            Thread thread = new Thread(
+//                    new BankClient(i, accounts, transferService, lock, failed)
+//            );
+//            clients.add(thread);
+//            thread.start();
+//        }
+//        for (Thread thread : clients){
+//            thread.join();
+//        }
         double finalTotal = 0;
         for (BankAccount account : accounts){
             System.out.println(account.getOwner() + ": " + account.getBalance());
