@@ -3,9 +3,11 @@ package bank;
 import bank.application.*;
 import bank.domain.*;
 import bank.ports.NotificationService;
+import bank.application.BankMonitor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+
 
 public class BankSimulation{
     public static void main(String[] args) throws InterruptedException{
@@ -30,22 +32,27 @@ public class BankSimulation{
                 new BlockedAccountRegistry(),
                 new TransactionJournal()
         );
-        Deadlock.run(
-                transferService,
-                accounts.get(0),
-                accounts.get(1)
-        );
-//        List<Thread> clients = new ArrayList<>();
-//        for (int i = 0; i < 5; i++){
-//            Thread thread = new Thread(
-//                    new BankClient(i, accounts, transferService, lock, failed)
-//            );
-//            clients.add(thread);
-//            thread.start();
-//        }
-//        for (Thread thread : clients){
-//            thread.join();
-//        }
+//        Deadlock.run(
+//                transferService,
+//                accounts.get(0),
+//                accounts.get(1)
+//        );
+        BankMonitor monitor = new BankMonitor(accounts, initialTotal);
+        Thread monitorThread = new Thread(monitor, "bank monitor");
+        monitorThread.start();
+        List<Thread> clients = new ArrayList<>();
+        for (int i = 0; i < 5; i++){
+            Thread thread = new Thread(
+                    new BankClient(i, accounts, transferService, lock, failed)
+            );
+            clients.add(thread);
+            thread.start();
+        }
+        for (Thread thread : clients){
+            thread.join();
+        }
+        monitorThread.interrupt();
+        monitorThread.join();
         double finalTotal = 0;
         for (BankAccount account : accounts){
             System.out.println(account.getOwner() + ": " + account.getBalance());
