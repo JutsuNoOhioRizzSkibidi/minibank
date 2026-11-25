@@ -19,18 +19,16 @@ public abstract class BankAccount implements Identifiable<AccountNumber> {
             this.owner = owner;
             this.balance = initialBalance;
     }
-    public void deposit(double amount){
+    public synchronized void deposit(double amount){
         if (amount <= 0){
             throw new IllegalArgumentException("сумма должна быть положительной");
         }
         balance = balance + amount;
     }
     public abstract void withdraw(double amount);
-    public double getBalance() {
-        return balance;
-    }
+    public synchronized double getBalance() {return balance;}
     public String getOwner(){ return owner;}
-    protected void withdrawKeepMin(
+    protected synchronized void withdrawKeepMin(
             double amount,
             double minimumBalance){
         if (amount <= 0){
@@ -42,7 +40,7 @@ public abstract class BankAccount implements Identifiable<AccountNumber> {
         balance = balance - amount;
     }
     @Override
-    public String toString(){
+    public synchronized String toString(){
         return getClass().getSimpleName() + "{"
                 + "number='" + number.value() + '\''
                 + ", owner='" + owner + '\''
