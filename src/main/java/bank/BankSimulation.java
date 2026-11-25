@@ -4,6 +4,7 @@ import bank.application.*;
 import bank.domain.*;
 import bank.ports.NotificationService;
 import bank.application.BankMonitor;
+import bank.application.StatisticsMonitor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -41,6 +42,13 @@ public class BankSimulation{
         BankMonitor monitor = new BankMonitor(accounts, initialTotal);
         Thread monitorThread = new Thread(monitor, "bank monitor");
         monitorThread.start();
+        StatisticsMonitor statisticsMonitor = new StatisticsMonitor(
+                succesfulTransfer, failedTransfer
+        );
+        Thread statisticsThread = new Thread(
+                statisticsMonitor, "Statistics monitor"
+        );
+        statisticsThread.start();
         List<Thread> clients = new ArrayList<>();
         for (int i = 0; i < 5; i++){
             Thread thread = new Thread(
@@ -53,8 +61,10 @@ public class BankSimulation{
             thread.join();
         }
         monitorThread.interrupt();
+        statisticsThread.interrupt();
         monitorThread.join();
-
+        statisticsThread.join();
+        System.out.println("все потоки завершены");
         int successful = succesfulTransfer.get();
         int failed = failedTransfer.get();
         int totalAttempts = 5 * 1000;
