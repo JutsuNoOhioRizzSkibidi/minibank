@@ -24,7 +24,8 @@ public class BankSimulation{
         }
         System.out.println("начальный баланас " + initialTotal);
         Object lock = new Object();
-        AtomicInteger failed = new AtomicInteger();
+        AtomicInteger succesfulTransfer = new AtomicInteger();
+        AtomicInteger failedTransfer = new AtomicInteger();
         NotificationService notification = message -> {};
         TransferService transferService = new TransferService(
                 new NoCommission(),
@@ -43,7 +44,7 @@ public class BankSimulation{
         List<Thread> clients = new ArrayList<>();
         for (int i = 0; i < 5; i++){
             Thread thread = new Thread(
-                    new BankClient(i, accounts, transferService, lock, failed)
+                    new BankClient(i, accounts, transferService, lock, succesfulTransfer, failedTransfer)
             );
             clients.add(thread);
             thread.start();
@@ -53,6 +54,15 @@ public class BankSimulation{
         }
         monitorThread.interrupt();
         monitorThread.join();
+
+        int successful = succesfulTransfer.get();
+        int failed = failedTransfer.get();
+        int totalAttempts = 5 * 1000;
+        System.out.println("успешных переводов: " + successful);
+        System.out.println("неуспешных переводов: " + failed);
+        System.out.println("всего попыток: " + totalAttempts);
+        System.out.println("статистика корректна: "
+                + (successful + failed == totalAttempts));
         double finalTotal = 0;
         for (BankAccount account : accounts){
             System.out.println(account.getOwner() + ": " + account.getBalance());
@@ -62,6 +72,5 @@ public class BankSimulation{
         System.out.println("конечный баланс: " + finalTotal);
         System.out.println("разница: " + (finalTotal - initialTotal));
         System.out.println("инвариант сохранен: " + (initialTotal == finalTotal));
-        System.out.println("неуспешных операций: " + failed.get());
     }
 }

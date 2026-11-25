@@ -9,16 +9,20 @@ public class BankClient implements Runnable{
     private final List<BankAccount> accounts;
     private final TransferService transferService;
     private final Object lock;
-    private final AtomicInteger failed;
+    private final AtomicInteger succesfulTransfers;
+    private final AtomicInteger failedTransfers;
+
 
     public BankClient(int clientId, List<BankAccount> accounts,
                       TransferService transferService, Object lock,
-                      AtomicInteger failed){
+                      AtomicInteger succesfulTransfers,
+                      AtomicInteger failedTransfers){
         this.clientId = clientId;
         this.accounts = accounts;
         this.transferService = transferService;
         this.lock = lock;
-        this.failed = failed;
+        this.succesfulTransfers = succesfulTransfers;
+        this.failedTransfers = failedTransfers;
     }
     @Override
     public void run(){
@@ -34,10 +38,11 @@ public class BankClient implements Runnable{
             try{
 
                     transferService.transfer(from, to, amount);
+                    succesfulTransfers.incrementAndGet();
 
             }
             catch (RuntimeException e){
-                failed.incrementAndGet();
+                failedTransfers.incrementAndGet();
             }
         }
         System.out.println("клиент " + clientId + " завершил работу");
