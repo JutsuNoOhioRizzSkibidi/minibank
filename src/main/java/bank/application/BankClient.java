@@ -32,7 +32,7 @@ public class BankClient implements Runnable{
             BankAccount from = accounts.get(fromIndex);
             BankAccount to = accounts.get(toIndex);
             try{
-                synchronized (lock){
+                synchronized (lock) {
                     transferService.transfer(from, to, amount);
                 }
             }

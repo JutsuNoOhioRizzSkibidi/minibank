@@ -16,6 +16,11 @@ public class BankSimulation{
                 new DebitAccount(new AccountNumber("1234567893"), "sanya3", 100000),
                 new DebitAccount(new AccountNumber("1234567894"), "sanya4", 100000)
         );
+        double initialTotal = 0;
+        for (BankAccount account : accounts){
+            initialTotal = initialTotal + account.getBalance();
+        }
+        System.out.println("начальный баланас " + initialTotal);
         Object lock = new Object();
         AtomicInteger failed = new AtomicInteger();
         NotificationService notification = message -> {};
@@ -36,12 +41,15 @@ public class BankSimulation{
         for (Thread thread : clients){
             thread.join();
         }
-        double total = 0;
+        double finalTotal = 0;
         for (BankAccount account : accounts){
             System.out.println(account.getOwner() + ": " + account.getBalance());
-            total = total + account.getBalance();
+            finalTotal = finalTotal + account.getBalance();
         }
-        System.out.println("общий баланс: " + total);
+        System.out.println("начанльый баланс: " + initialTotal);
+        System.out.println("конечный баланс: " + finalTotal);
+        System.out.println("разница: " + (finalTotal - initialTotal));
+        System.out.println("инвариант сохранен: " + (initialTotal == finalTotal));
         System.out.println("неуспешных операций: " + failed.get());
     }
 }
