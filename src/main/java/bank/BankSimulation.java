@@ -64,23 +64,31 @@ public class BankSimulation{
         statisticsThread.interrupt();
         monitorThread.join();
         statisticsThread.join();
-        System.out.println("все потоки завершены");
-        int successful = succesfulTransfer.get();
-        int failed = failedTransfer.get();
-        int totalAttempts = 5 * 1000;
-        System.out.println("успешных переводов: " + successful);
-        System.out.println("неуспешных переводов: " + failed);
-        System.out.println("всего попыток: " + totalAttempts);
-        System.out.println("статистика корректна: "
-                + (successful + failed == totalAttempts));
         double finalTotal = 0;
+        System.out.println();
+        System.out.println("=== ИТОГОВЫЕ БАЛАНСЫ ===");
         for (BankAccount account : accounts){
             System.out.println(account.getOwner() + ": " + account.getBalance());
             finalTotal = finalTotal + account.getBalance();
         }
-        System.out.println("начанльый баланс: " + initialTotal);
-        System.out.println("конечный баланс: " + finalTotal);
-        System.out.println("разница: " + (finalTotal - initialTotal));
-        System.out.println("инвариант сохранен: " + (initialTotal == finalTotal));
+        int successful = succesfulTransfer.get();
+        int failed = failedTransfer.get();
+        int totalAttempts = 5 * 10000;
+        boolean invariantOk = Double.compare(initialTotal, finalTotal) == 0;
+        boolean statisticsOk = successful + failed == totalAttempts;
+        System.out.println();
+        System.out.println("=== ИТОГОВЫЙ ОТЧЁТ ===");
+        System.out.println("Начальный баланс: " + initialTotal);
+        System.out.println("Конечный баланс: " + finalTotal);
+        System.out.println("Успешных переводов: " + successful);
+        System.out.println("Неуспешных переводов: " + failed);
+        System.out.println("Всего попыток: " + totalAttempts);
+        System.out.println("Разница: " + (finalTotal - initialTotal));
+        System.out.println("Банковский инвариант: "
+                + (invariantOk ? "save" : "error"));
+        System.out.println("Статистика: "
+                + (statisticsOk ? "correct" : "error"));
+        System.out.println("Все потоки завершены.");
+
     }
 }
