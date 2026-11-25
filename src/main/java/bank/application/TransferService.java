@@ -33,30 +33,46 @@ public class TransferService{
             double amount
     )
     {
-        if (amount <= 0){
+        if (from == null || to == null){
+            throw new IllegalArgumentException("счет не может быть null");
+        }
+        if (amount <= 0 || !Double.isFinite(amount)){
             throw new IllegalArgumentException("сумма должна быть положительной");
         }
         if (from.equals(to)){
             throw new IllegalArgumentException("нельзя перевести на тот же счет");
         }
-        if (amount >50_000){
+        if (amount > 50_000){
             throw new TransferLimitExceededException("превышен лимит перевода");
         }
-        if (blockedAccounts.isBlocked(from.getId())){
-            throw new IllegalStateException("данный счет заблокирован");
+        BankAccount first = from;
+        BankAccount second = to;
+        if (from.getId().value().compareTo(to.getId().value()) > 0){
+            first = to;
+            second = from;
         }
-        double commission = commissionPolicy.calculate(amount);
-        double totalAmount = amount + commission;
-        from.withdraw(totalAmount);
-        to.deposit(amount);
-        Transaction transaction = new Transaction(
-                (long) journal.size()+1,
-                TransactionType.TRANSFER,
-                from.getId(),
-                amount,
-                TransactionStatus.SUCCESS
-        );
-        journal.add(transaction);
+        Transaction transaction;
+        synchronized (first){
+            synchronized (second){
+                if (blockedAccounts.isBlocked(from.getId())){
+                    throw new IllegalStateException("данный счет заблокирован");
+                }
+                double commission = commissionPolicy.calculate(amount);
+                double totalAmount = amount + commission;
+                from.withdraw(totalAmount);
+                to.deposit(amount);
+                synchronized (journal){
+                    transaction = new Transaction(
+                            (long) journal.size() + 1,
+                            TransactionType.TRANSFER,
+                            from.getId(),
+                            amount,
+                            TransactionStatus.SUCCESS
+                    );
+                    journal.add(transaction);
+                }
+            }
+        }
         publisher.publish(transaction);
     }
 }
