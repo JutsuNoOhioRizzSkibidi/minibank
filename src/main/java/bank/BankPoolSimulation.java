@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.ArrayList;
 
 public class BankPoolSimulation {
@@ -56,18 +59,38 @@ public class BankPoolSimulation {
         TransferDispatcher dispatcher;
         System.out.println("режим работы: " + mode);
         long startTime = System.nanoTime();
-        try (ExecutorService executor = createExecutor(mode)){
-            dispatcher = new TransferDispatcher(
-                    executor,
-                    applicationService
-            );
-            for (TransferRequest request : requests){
-                dispatcher.submit(request);
-                if (dispatcher.getSubmitted() % 250 == 0){
-                    System.out.println("отправлено: "
-                            + dispatcher.getSubmitted()
-                            + ", ожидают: "
-                            + dispatcher.getWaiting());
+        try (ScheduledExecutorService scheduler =
+                     Executors.newSingleThreadScheduledExecutor()){
+            ScheduledFuture<?> monitorTask = null;
+            try (ExecutorService executor = createExecutor(mode)){
+                dispatcher = new TransferDispatcher(
+                        executor,
+                        applicationService
+                );
+                ScheduledBankMonitor monitor = new ScheduledBankMonitor(
+                        dispatcher,
+                        accounts,
+                        initialTotal
+                );
+                monitorTask = scheduler.scheduleAtFixedRate(
+                        monitor,
+                        0,
+                        1,
+                        TimeUnit.SECONDS
+                );
+                for (TransferRequest request : requests){
+                    dispatcher.submit(request);
+                    if (dispatcher.getSubmitted() % 250 == 0){
+                        System.out.println("отправлено: "
+                                + dispatcher.getSubmitted()
+                                + ", ожидают: "
+                                + dispatcher.getWaiting());
+                    }
+                }
+            }
+            finally{
+                if (monitorTask != null){
+                    monitorTask.cancel(false);
                 }
             }
         }
@@ -82,6 +105,8 @@ public class BankPoolSimulation {
         System.out.println("режим: " + mode);
         System.out.println("поступило заявок: " + dispatcher.getReceived());
         System.out.println("передано исполнителю: " + dispatcher.getSubmitted());
+        System.out.println("завершено заявок: " + dispatcher.getCompleted());
+        System.out.println("ожидают обработки: " + dispatcher.getWaiting());
         System.out.println("уникальных потоков: " + dispatcher.getWorkerCount());
         System.out.println("максимум ожидающих задач: " + dispatcher.getMaxWaiting());
         System.out.printf("время выполнения: %.2f мс%n", executionTime);

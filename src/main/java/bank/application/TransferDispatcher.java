@@ -10,6 +10,7 @@ public class TransferDispatcher {
     private final TransferApplicationService transferService;
     private final AtomicInteger received = new AtomicInteger();
     private final AtomicInteger submitted = new AtomicInteger();
+    private final AtomicInteger completed = new AtomicInteger();
     private final Set<String> workerThreads = ConcurrentHashMap.newKeySet();
     private final AtomicInteger waiting = new AtomicInteger();
     private final AtomicInteger maxWaiting = new AtomicInteger();
@@ -47,6 +48,9 @@ public class TransferDispatcher {
                     System.out.println("ошибка заявки "
                             + request.id() + ": " + e.getMessage());
                 }
+                finally{
+                    completed.incrementAndGet();
+                }
             });
             submitted.incrementAndGet();
             maxWaiting.accumulateAndGet(
@@ -73,5 +77,8 @@ public class TransferDispatcher {
     }
     public int getMaxWaiting(){
         return maxWaiting.get();
+    }
+    public int getCompleted(){
+        return completed.get();
     }
 }
