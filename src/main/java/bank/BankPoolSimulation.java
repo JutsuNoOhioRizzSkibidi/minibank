@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.ArrayList;
 
 public class BankPoolSimulation {
     public static void main(String[] args){
@@ -33,43 +34,68 @@ public class BankPoolSimulation {
                 new TransactionJournal()
         );
         TransferApplicationService applicationService = new TransferApplicationService(repository, transferService);
+        String mode = "fixed";
+        if (args.length > 0){
+            mode = args[0];
+        }
+        List<TransferRequest> requests = new ArrayList<>();
+        for (int i = 1; i <= 1000; i++){
+            int fromIndex = i % accounts.size();
+            int toIndex = (fromIndex + 1) % accounts.size();
+            AccountNumber from = accounts.get(fromIndex).getId();
+            AccountNumber to = accounts.get(toIndex).getId();
+            double amount = 100;
+            if (i % 100 == 0){
+                amount = -100;
+            }
+            if (i % 100 == 1){
+                to = new AccountNumber("9999999999");
+            }
+            requests.add(new TransferRequest(from, to, amount));
+        }
         TransferDispatcher dispatcher;
-        try (ExecutorService executor = Executors.newFixedThreadPool(4)){
+        System.out.println("режим работы: " + mode);
+        long startTime = System.nanoTime();
+        try (ExecutorService executor = createExecutor(mode)){
             dispatcher = new TransferDispatcher(
-                    executor, applicationService
+                    executor,
+                    applicationService
             );
-            for (int i = 1; i <= 1000; i++){
-                int fromIndex = i % accounts.size();
-                int toIndex = (fromIndex + 1) % accounts.size();
-                AccountNumber from = accounts.get(fromIndex).getId();
-                AccountNumber to = accounts.get(toIndex).getId();
-                double amount = 100;
-                if (i % 100 == 0){
-                    amount = -100;
-                }
-                if (i % 100 == 1){
-                    to = new AccountNumber("9999999999");
-                }
-                TransferRequest request = new TransferRequest(
-                        from,
-                        to,
-                        amount
-                );
+            for (TransferRequest request : requests){
                 dispatcher.submit(request);
-
-
+                if (dispatcher.getSubmitted() % 250 == 0){
+                    System.out.println("отправлено: "
+                            + dispatcher.getSubmitted()
+                            + ", ожидают: "
+                            + dispatcher.getWaiting());
+                }
             }
         }
+        long endTime = System.nanoTime();
+        double executionTime = (endTime - startTime) / 1_000_000.0;
         double finalTotal = 0;
-        for(BankAccount account : accounts){
+        for (BankAccount account : accounts){
             finalTotal = finalTotal + account.getBalance();
         }
-        System.out.println("=== Итоговый отчет ===");
+        System.out.println();
+        System.out.println("=== ИТОГОВЫЙ ОТЧЕТ ===");
+        System.out.println("режим: " + mode);
         System.out.println("поступило заявок: " + dispatcher.getReceived());
         System.out.println("передано исполнителю: " + dispatcher.getSubmitted());
+        System.out.println("уникальных потоков: " + dispatcher.getWorkerCount());
+        System.out.println("максимум ожидающих задач: " + dispatcher.getMaxWaiting());
+        System.out.printf("время выполнения: %.2f мс%n", executionTime);
         System.out.println("начальный баланс: " + initialTotal);
         System.out.println("конечный баланс: " + finalTotal);
         System.out.println("инвариант сохранен: " + (initialTotal == finalTotal));
         System.out.println("все потоки завершены");
+    }
+    private static ExecutorService createExecutor(String mode){
+        return switch (mode){
+            case "single" -> Executors.newSingleThreadExecutor();
+            case "fixed" -> Executors.newFixedThreadPool(4);
+            case "cached" -> Executors.newCachedThreadPool();
+            default -> throw new IllegalArgumentException("неизвестный режим");
+        };
     }
 }
