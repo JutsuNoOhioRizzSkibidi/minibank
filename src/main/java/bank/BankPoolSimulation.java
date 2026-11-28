@@ -12,6 +12,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.LinkedHashMap;
+import java.util.concurrent.Future;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 public class BankPoolSimulation {
     public static void main(String[] args){
@@ -32,6 +37,12 @@ public class BankPoolSimulation {
         }
         NotificationService notification = message -> {};
         TransferService transferService = new TransferService(
+//                amount -> {
+//                    if (amount == 123) {
+//                        throw new IllegalStateException("тестовая техническая ошибка");
+//                    }
+//                    return 0;
+//                },
                 new NoCommission(),
                 notification, new BlockedAccountRegistry(),
                 new TransactionJournal()
@@ -48,6 +59,9 @@ public class BankPoolSimulation {
             AccountNumber from = accounts.get(fromIndex).getId();
             AccountNumber to = accounts.get(toIndex).getId();
             double amount = 100;
+//            if (i == 2){
+//                amount = 123;
+//            }
             if (i % 100 == 0){
                 amount = -100;
             }
@@ -57,6 +71,9 @@ public class BankPoolSimulation {
             requests.add(new TransferRequest(from, to, amount));
         }
         TransferDispatcher dispatcher;
+        Map<Long, Future<TransferResult>> futures =
+                new LinkedHashMap<>();
+        List<TransferResult> results;
         System.out.println("режим работы: " + mode);
         long startTime = System.nanoTime();
         try (ScheduledExecutorService scheduler =
@@ -79,7 +96,9 @@ public class BankPoolSimulation {
                         TimeUnit.SECONDS
                 );
                 for (TransferRequest request : requests){
-                    dispatcher.submit(request);
+                    Future<TransferResult> future =
+                            dispatcher.submit(request);
+                    futures.put(request.id(), future);
                     if (dispatcher.getSubmitted() % 250 == 0){
                         System.out.println("отправлено: "
                                 + dispatcher.getSubmitted()
@@ -87,6 +106,7 @@ public class BankPoolSimulation {
                                 + dispatcher.getWaiting());
                     }
                 }
+                results = collectResults(futures);
             }
             finally{
                 if (monitorTask != null){
@@ -99,6 +119,24 @@ public class BankPoolSimulation {
         double finalTotal = 0;
         for (BankAccount account : accounts){
             finalTotal = finalTotal + account.getBalance();
+        }
+        int successful = 0;
+        int rejected = 0;
+        int errors = 0;
+        for (TransferResult result : results){
+            switch (result.status()){
+                case SUCCESS -> successful++;
+                case REJECTED -> {
+                    rejected++;
+                    System.out.println("заявка " + result.requestId()
+                            + " отклонена: " + result.message());
+                }
+                case ERROR -> {
+                    errors++;
+                    System.out.println("техническая ошибка заявки "
+                            + result.requestId() + ": " + result.message());
+                }
+            }
         }
         System.out.println();
         System.out.println("=== ИТОГОВЫЙ ОТЧЕТ ===");
@@ -114,6 +152,55 @@ public class BankPoolSimulation {
         System.out.println("конечный баланс: " + finalTotal);
         System.out.println("инвариант сохранен: " + (initialTotal == finalTotal));
         System.out.println("все потоки завершены");
+        System.out.println("успешных переводов: " + successful);
+        System.out.println("бизнес-отказов: " + rejected);
+        System.out.println("технических ошибок: " + errors);
+        System.out.println("получено результатов: " + results.size());
+        System.out.println("все результаты получены: " + (results.size() == dispatcher.getSubmitted()
+                && successful + rejected + errors == results.size()));
+    }
+    private static List<TransferResult> collectResults(
+            Map<Long, Future<TransferResult>> futures){
+        List<TransferResult> results = new ArrayList<>();
+        boolean interrupted = false;
+        try{
+            for (Map.Entry<Long, Future<TransferResult>> entry
+                    : futures.entrySet()){
+                long id = entry.getKey();
+                Future<TransferResult> future = entry.getValue();
+                while (true){
+                    try{
+                        TransferResult result =
+                                future.get(1, TimeUnit.SECONDS);
+
+                        results.add(result);
+                        break;
+                    }
+                    catch (ExecutionException e){
+                        results.add(new TransferResult(
+                                id,
+                                TransferStatus.ERROR,
+                                e.getCause().toString()
+                        ));
+                        break;
+                    }
+                    catch (TimeoutException e){
+                        System.out.println("заявка " + id
+                                + ": время ожидания истекло");
+                    }
+                    catch (InterruptedException e){
+                        interrupted = true;
+                        System.out.println("ожидание результата прервано");
+                    }
+                }
+            }
+        }
+        finally{
+            if (interrupted){
+                Thread.currentThread().interrupt();
+            }
+        }
+        return results;
     }
     private static ExecutorService createExecutor(String mode){
         return switch (mode){

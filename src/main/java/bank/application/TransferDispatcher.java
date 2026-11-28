@@ -1,9 +1,15 @@
 package bank.application;
 
+import bank.domain.BlockedAccountException;
+import bank.domain.InsufficientFundsException;
+import bank.domain.TransferLimitExceededException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
 
 public class TransferDispatcher {
     private final ExecutorService executor;
@@ -21,11 +27,10 @@ public class TransferDispatcher {
         this.executor = executor;
         this.transferService = transferService;
     }
-    public void submit(TransferRequest request) {
+    public Future<TransferResult> submit(TransferRequest request){
         int number = received.incrementAndGet();
         waiting.incrementAndGet();
-        try{
-            executor.execute(() -> {
+        Callable<TransferResult> task = () -> {
                 waiting.decrementAndGet();
                 String threadName = Thread.currentThread().getName();
                 workerThreads.add(threadName);
@@ -39,26 +44,37 @@ public class TransferDispatcher {
                             request.to(),
                             request.amount()
                     );
+                    return new TransferResult(
+                            request.id(),
+                            TransferStatus.SUCCESS,
+                            "перевод выполнен"
+                    );
                 }
-                catch (InterruptedException e){
-                    Thread.currentThread().interrupt();
-                    System.out.println("заявка прервана: " + request.id());
-                }
-                catch (RuntimeException e){
-                    System.out.println("ошибка заявки "
-                            + request.id() + ": " + e.getMessage());
+                catch (IllegalArgumentException
+                       | InsufficientFundsException
+                       | TransferLimitExceededException
+                       | BlockedAccountException e){
+
+                    return new TransferResult(
+                            request.id(),
+                            TransferStatus.REJECTED,
+                            e.getMessage()
+                    );
                 }
                 finally{
                     completed.incrementAndGet();
                 }
-            });
+        };
+        try{
+            Future<TransferResult> future = executor.submit(task);
             submitted.incrementAndGet();
             maxWaiting.accumulateAndGet(
                     waiting.get(),
                     Math::max
             );
+            return future;
         }
-        catch (RuntimeException e){
+        catch (RejectedExecutionException e){
             waiting.decrementAndGet();
             throw e;
         }

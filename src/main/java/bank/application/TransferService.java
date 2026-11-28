@@ -55,7 +55,7 @@ public class TransferService{
         synchronized (first){
             synchronized (second){
                 if (blockedAccounts.isBlocked(from.getId())){
-                    throw new IllegalStateException("данный счет заблокирован");
+                    throw new BlockedAccountException("данный счет заблокирован");
                 }
                 double commission = commissionPolicy.calculate(amount);
                 double totalAmount = amount + commission;
